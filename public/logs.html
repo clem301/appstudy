@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AppStudy - Debug Logs</title>
+  <style>
+    body {
+      font-family: 'Courier New', monospace;
+      background: #1a1a1a;
+      color: #00ff00;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      color: #00ff00;
+      border-bottom: 2px solid #00ff00;
+      padding-bottom: 10px;
+    }
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #00ff00;
+      color: #1a1a1a;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #00cc00;
+    }
+    .stats {
+      background: #2a2a2a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .log-container {
+      background: #000;
+      padding: 15px;
+      border-radius: 4px;
+      max-height: 70vh;
+      overflow-y: auto;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .log-entry {
+      margin: 2px 0;
+      padding: 2px 0;
+    }
+    .log-error {
+      color: #ff4444;
+      font-weight: bold;
+    }
+    .log-warn {
+      color: #ffaa00;
+    }
+    .log-log {
+      color: #00ff00;
+    }
+    .time {
+      color: #888;
+      margin-right: 10px;
+    }
+    .highlight {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 AppStudy Debug Logs</h1>
+
+  <div class="stats" id="stats">
+    Chargement...
+  </div>
+
+  <div class="controls">
+    <button onclick="refreshLogs()">🔄 Rafraîchir</button>
+    <button onclick="downloadLogs()">💾 Télécharger</button>
+    <button onclick="clearLogs()">🗑️ Effacer</button>
+    <button onclick="copyLogs()">📋 Copier</button>
+  </div>
+
+  <div class="log-container" id="logs">
+    Aucun log trouvé.
+  </div>
+
+  <script>
+    function loadLogs() {
+      try {
+        const stored = localStorage.getItem('appstudy_debug_logs')
+        if (!stored) {
+          document.getElementById('logs').innerHTML = 'Aucun log trouvé. Les logs seront capturés automatiquement.'
+          document.getElementById('stats').innerHTML = '<strong>Statut:</strong> Aucun log'
+          return []
+        }
+
+        const logs = JSON.parse(stored)
+
+        // Statistiques
+        const errorCount = logs.filter(l => l.type === 'error').length
+        const warnCount = logs.filter(l => l.type === 'warn').length
+        const totalCount = logs.length
+
+        const firstTime = logs.length > 0 ? new Date(logs[0].timestamp) : null
+        const lastTime = logs.length > 0 ? new Date(logs[logs.length - 1].timestamp) : null
+
+        document.getElementById('stats').innerHTML = `
+          <strong>Total:</strong> ${totalCount} logs |
+          <strong>Erreurs:</strong> ${errorCount} |
+          <strong>Warnings:</strong> ${warnCount} |
+          <strong>Période:</strong> ${firstTime ? firstTime.toLocaleTimeString() : '-'} → ${lastTime ? lastTime.toLocaleTimeString() : '-'}
+        `
+
+        // Afficher les logs
+        const container = document.getElementById('logs')
+        container.innerHTML = logs.map(log => {
+          const className = `log-entry log-${log.type}`
+          const highlight = log.message.includes('refresh') || log.message.includes('Cleanup') || log.message.includes('MONTAGE') || log.message.includes('DÉMONTAGE') ? ' highlight' : ''
+          return `<div class="${className}${highlight}"><span class="time">[${log.time}]</span>${log.message}</div>`
+        }).join('')
+
+        // Auto-scroll vers le bas
+        container.scrollTop = container.scrollHeight
+
+        return logs
+      } catch (err) {
+        document.getElementById('logs').innerHTML = 'Erreur de chargement: ' + err.message
+        return []
+      }
+    }
+
+    function refreshLogs() {
+      loadLogs()
+    }
+
+    function downloadLogs() {
+      const stored = localStorage.getItem('appstudy_debug_logs')
+      if (!stored) {
+        alert('Aucun log à télécharger')
+        return
+      }
+
+      const logs = JSON.parse(stored)
+      const content = logs.map(log => `[${log.time}] [${log.type.toUpperCase()}] ${log.message}`).join('\n')
+
+      const blob = new Blob([content], { type: 'text/plain' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `appstudy-debug-${Date.now()}.log`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }
+
+    function clearLogs() {
+      if (confirm('Effacer tous les logs?')) {
+        localStorage.removeItem('appstudy_debug_logs')
+        document.getElementById('logs').innerHTML = 'Logs effacés.'
+        document.getElementById('stats').innerHTML = '<strong>Statut:</strong> Logs effacés'
+      }
+    }
+
+    function copyLogs() {
+      const stored = localStorage.getItem('appstudy_debug_logs')
+      if (!stored) {
+        alert('Aucun log à copier')
+        return
+      }
+
+      const logs = JSON.parse(stored)
+      const content = logs.map(log => `[${log.time}] [${log.type.toUpperCase()}] ${log.message}`).join('\n')
+
+      navigator.clipboard.writeText(content).then(() => {
+        alert('Logs copiés dans le presse-papiers!')
+      }).catch(err => {
+        alert('Erreur de copie: ' + err.message)
+      })
+    }
+
+    // Charger les logs au démarrage
+    loadLogs()
+
+    // Auto-refresh toutes les 2 secondes
+    setInterval(refreshLogs, 2000)
+  </script>
+</body>
+</html>

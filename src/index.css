@@ -1,0 +1,302 @@
+@import "tailwindcss";
+
+html {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none;
+}
+
+body {
+  background: #0a1929;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  overscroll-behavior: none;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Card - Style Quizlet-inspired */
+.glass-card {
+  background: #1c2938;
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Button secondary */
+.glass-button {
+  background: #2d3d52;
+  border-radius: 16px;
+  padding: 0.875rem 1.75rem;
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+  border: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.glass-button:hover {
+  background: #3a4d66;
+  transform: scale(1.02);
+}
+
+.glass-button:active {
+  transform: scale(0.98);
+}
+
+/* Primary Button - Accent orange/rouge comme Quizlet */
+.gradient-button {
+  background: #ff6b35;
+  border-radius: 16px;
+  padding: 0.875rem 1.75rem;
+  font-weight: 700;
+  font-size: 15px;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.gradient-button:hover {
+  background: #ff8555;
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+.gradient-button:active {
+  transform: scale(0.98);
+}
+
+/* Input */
+.glass-input {
+  background: #1c2938;
+  border-radius: 14px;
+  padding: 0.875rem 1.125rem;
+  font-size: 15px;
+  color: #ffffff;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.glass-input::placeholder {
+  color: #6b7d94;
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: #4d5b6f;
+  background: #243447;
+}
+
+/* Backgrounds */
+.bg-gradient-primary {
+  background: #ff6b35;
+}
+
+.bg-gradient-secondary {
+  background: #4d9de0;
+}
+
+/* Text accent */
+.text-gradient-primary {
+  color: #ff8555;
+  font-weight: 700;
+}
+
+/* Safe area for mobile (iPhone notch, etc.) */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Bottom navigation height */
+.bottom-nav-height {
+  height: calc(4rem + env(safe-area-inset-bottom));
+}
+
+.pb-bottom-nav {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Synthesis Content Styling - Fiche de révision noir & blanc */
+.synthesis-content {
+  color: #e5e5e5;
+  line-height: 1.8;
+  background: transparent;
+  padding: 0;
+}
+
+.synthesis-content h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #ffffff;
+}
+
+.synthesis-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-left: 0.75rem;
+  border-left: 4px solid #ffffff;
+}
+
+.synthesis-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.synthesis-content p {
+  margin-bottom: 1rem;
+  color: #e5e5e5;
+}
+
+.synthesis-content ul,
+.synthesis-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.synthesis-content li {
+  margin-bottom: 0.5rem;
+  color: #e5e5e5;
+}
+
+.synthesis-content strong {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.synthesis-content em {
+  font-style: italic;
+  color: #cccccc;
+}
+
+.synthesis-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.synthesis-content table th,
+.synthesis-content table td {
+  border: 1px solid #4d5b6f;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.synthesis-content table th {
+  background: #2d3d52;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.synthesis-content table td {
+  background: #1c2938;
+  color: #e5e5e5;
+}
+
+/* Key points box */
+.synthesis-content [style*="background"] {
+  background: #1c2938 !important;
+  border: 2px solid #4d5b6f !important;
+  border-radius: 12px !important;
+  padding: 1.25rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+/* Definitions */
+.synthesis-content [style*="background: #f5f5f5"],
+.synthesis-content [style*="background:#f5f5f5"] {
+  background: #2d3d52 !important;
+  border-radius: 8px !important;
+  padding: 1rem !important;
+  margin: 1rem 0 !important;
+}
+
+/* Formulas/Equations */
+.synthesis-content [style*="text-align: center"],
+.synthesis-content [style*="text-align:center"] {
+  text-align: center !important;
+  font-family: 'Courier New', monospace !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  padding: 1rem !important;
+  margin: 1.5rem 0 !important;
+  background: #1c2938 !important;
+  border-radius: 8px !important;
+}

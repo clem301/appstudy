@@ -1,0 +1,169 @@
+<!-- Exemple de synthèse - Style professionnel noir & blanc avec arrondis -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background: #ffffff;
+      padding: 2rem;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      color: #000000;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+
+<!-- En-tête principal avec bordure épaisse et arrondis -->
+<div style="border: 3px solid #000000; padding: 1.5rem; margin-bottom: 2rem; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+  <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #000000;">
+    FICHE 6.3 : ASYMPTOTES VERTICALES ET POINTS CREUX
+  </h1>
+</div>
+
+<!-- Sous-titre -->
+<div style="margin-bottom: 2rem;">
+  <h2 style="font-size: 1.8rem; font-weight: 700; margin: 0 0 0.5rem 0; border-bottom: 2px solid #000000; padding-bottom: 0.5rem; color: #000000;">
+    Chapitre 6 : Limites et asymptotes
+  </h2>
+  <p style="color: #666666; font-size: 0.9rem; margin: 0;">CESS Général — Mathématiques</p>
+</div>
+
+<!-- Section Vocabulaire -->
+<div style="margin-bottom: 2.5rem;">
+  <h3 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #000000;">
+    1. VOCABULAIRE
+  </h3>
+
+  <!-- Définition 1 -->
+  <div style="border: 2px solid #000000; padding: 1.25rem; margin-bottom: 1rem; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem 0; color: #000000;">Limite finie</h4>
+    <p style="margin: 0 0 1rem 0; line-height: 1.6; color: #000000;">
+      Une <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">limite finie</mark> est une limite de f(x) en un <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">réel donné a</mark>.
+    </p>
+
+    <!-- Formule encadrée -->
+    <div style="border: 2px solid #000000; padding: 1rem; text-align: center; border-radius: 8px;">
+      <code style="font-family: 'Courier New', monospace; font-size: 1.1rem; color: #000000; font-weight: 600;">
+        lim<sub>x→a</sub> f(x) = L
+      </code>
+    </div>
+  </div>
+
+  <!-- Définition 2 -->
+  <div style="border: 2px solid #000000; padding: 1.25rem; margin-bottom: 1rem; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem 0; color: #000000;">Droite</h4>
+    <p style="margin: 0; line-height: 1.6; color: #000000;">
+      Représentation graphique d'une <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">fonction du 1er degré</mark> ou d'une équation de degré 1 à 2 inconnues.
+    </p>
+  </div>
+
+  <!-- Définition 3 -->
+  <div style="border: 2px solid #000000; padding: 1.25rem; margin-bottom: 1rem; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem 0; color: #000000;">Asymptote</h4>
+    <p style="margin: 0; line-height: 1.6; color: #000000;">
+      Droite vers laquelle <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">tend une fonction</mark> lorsqu'elle se rapproche d'une borne de son domaine.
+    </p>
+  </div>
+
+  <!-- Définition 4 -->
+  <div style="border: 2px solid #000000; padding: 1.25rem; margin-bottom: 1rem; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem 0; color: #000000;">Point creux</h4>
+    <p style="margin: 0; line-height: 1.6; color: #000000;">
+      Point du repère vers lequel <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">tend la fonction</mark> lorsqu'elle se rapproche d'une borne de son domaine.
+    </p>
+  </div>
+</div>
+
+<!-- Section Points clés -->
+<div style="margin-bottom: 2.5rem;">
+  <h3 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #000000;">
+    2. RAPPEL : ÉQUATIONS DE DROITES
+  </h3>
+
+  <!-- Encadré avec barre latérale -->
+  <div style="border-left: 5px solid #000000; padding-left: 1.25rem; margin-bottom: 1.5rem; border-radius: 4px;">
+    <h4 style="font-size: 1rem; font-weight: 700; margin: 0 0 0.75rem 0; color: #000000;">Points clés essentiels</h4>
+    <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8; color: #000000;">
+      <li>Équation générale d'une droite : <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">y = mx + p</mark></li>
+      <li>Droite horizontale : <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">y = constante</mark></li>
+      <li>Droite verticale : <mark style="background: #e8e8e8; padding: 2px 4px; border-radius: 3px; font-weight: 600;">x = constante</mark></li>
+    </ul>
+  </div>
+
+  <!-- Formule importante centrée -->
+  <div style="border: 2px solid #000000; padding: 1.5rem; text-align: center; margin: 1.5rem 0; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <code style="font-family: 'Courier New', monospace; font-size: 1.3rem; color: #000000; font-weight: 600;">
+      m = (y₂ - y₁) / (x₂ - x₁)
+    </code>
+    <p style="margin: 0.75rem 0 0 0; font-size: 0.85rem; color: #666666; font-style: italic;">
+      Formule pour calculer la pente d'une droite
+    </p>
+  </div>
+</div>
+
+<!-- Section Exemple -->
+<div style="margin-bottom: 2.5rem;">
+  <h3 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #000000;">
+    3. EXEMPLE D'APPLICATION
+  </h3>
+
+  <div style="border: 2px solid #000000; padding: 1.25rem; background: #fafafa; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+    <p style="margin: 0; line-height: 1.6; color: #000000;">
+      <strong>Problème :</strong> Déterminer l'équation de la droite passant par les points A(1, 2) et B(3, 6).
+    </p>
+    <p style="margin: 0.75rem 0 0 0; line-height: 1.6; color: #000000;">
+      <strong>Solution :</strong> m = (6 - 2) / (3 - 1) = 4/2 = 2, donc y = 2x + p
+    </p>
+  </div>
+</div>
+
+<!-- Tableau comparatif -->
+<div style="margin-bottom: 2.5rem;">
+  <h3 style="font-size: 1.3rem; font-weight: 700; margin: 0 0 1.5rem 0; color: #000000;">
+    4. TABLEAU RÉCAPITULATIF
+  </h3>
+
+  <div style="border: 2px solid #000000; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); overflow: hidden;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr>
+          <th style="padding: 0.75rem; text-align: left; color: #000000; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; border-bottom: 2px solid #000000; border-right: 1px solid #000000;">Type de droite</th>
+          <th style="padding: 0.75rem; text-align: left; color: #000000; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; border-bottom: 2px solid #000000; border-right: 1px solid #000000;">Équation</th>
+          <th style="padding: 0.75rem; text-align: left; color: #000000; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; border-bottom: 2px solid #000000;">Caractéristique</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0.75rem; color: #000000; border-bottom: 1px solid #000000; border-right: 1px solid #000000;">Générale</td>
+          <td style="padding: 0.75rem; color: #000000; border-bottom: 1px solid #000000; border-right: 1px solid #000000;"><strong>y = mx + p</strong></td>
+          <td style="padding: 0.75rem; color: #000000; border-bottom: 1px solid #000000;">Pente m variable</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; color: #000000; background: #f9f9f9; border-bottom: 1px solid #000000; border-right: 1px solid #000000;">Horizontale</td>
+          <td style="padding: 0.75rem; color: #000000; background: #f9f9f9; border-bottom: 1px solid #000000; border-right: 1px solid #000000;"><strong>y = k</strong></td>
+          <td style="padding: 0.75rem; color: #000000; background: #f9f9f9; border-bottom: 1px solid #000000;">Pente nulle (m = 0)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; color: #000000; border-right: 1px solid #000000;">Verticale</td>
+          <td style="padding: 0.75rem; color: #000000; border-right: 1px solid #000000;"><strong>x = k</strong></td>
+          <td style="padding: 0.75rem; color: #000000;">Pente infinie</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Note importante en bas -->
+<div style="border: 3px solid #000000; padding: 1rem; margin-top: 2rem; background: #f5f5f5; border-radius: 12px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+  <p style="margin: 0; font-size: 0.9rem; color: #000000; font-weight: 600;">
+    ⚠️ <strong>Note importante :</strong> Une asymptote verticale indique une valeur interdite dans le domaine de définition de la fonction.
+  </p>
+</div>
+
+</body>
+</html>
