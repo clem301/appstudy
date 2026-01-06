@@ -189,9 +189,19 @@ export async function syncSyntheses(since: number = 0): Promise<SynthesisDTO[]> 
  */
 export async function checkBackendHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_URL}/health`, { method: 'GET' })
+    console.log(`🏥 Checking backend health at: ${API_URL}/health`)
+    const response = await fetch(`${API_URL}/health`, {
+      method: 'GET',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    })
+    console.log(`✅ Backend health check: ${response.ok} (status: ${response.status})`)
     return response.ok
   } catch (error) {
+    console.error('❌ Backend health check failed:', error)
     return false
   }
 }
