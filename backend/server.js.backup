@@ -18,7 +18,6 @@ const db = new Database(path.join(__dirname, 'appstudy.db'))
 db.exec(`
   CREATE TABLE IF NOT EXISTS syntheses (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL DEFAULT 'user_clement',
     title TEXT NOT NULL,
     subject TEXT NOT NULL,
     chapter TEXT NOT NULL,
@@ -37,7 +36,6 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS books (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL DEFAULT 'user_clement',
     title TEXT NOT NULL,
     author TEXT,
     cover_image TEXT,
@@ -51,7 +49,6 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS book_notes (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL DEFAULT 'user_clement',
     book_id TEXT NOT NULL,
     book_title TEXT NOT NULL,
     page INTEGER,
@@ -65,7 +62,6 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS flashcards (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL DEFAULT 'user_clement',
     synthesis_id TEXT,
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
@@ -85,19 +81,11 @@ db.exec(`
     FOREIGN KEY (synthesis_id) REFERENCES syntheses(id) ON DELETE SET NULL
   );
 
-  CREATE INDEX IF NOT EXISTS idx_syntheses_user_id ON syntheses(user_id);
-  CREATE INDEX IF NOT EXISTS idx_syntheses_user_id ON syntheses(user_id);
   CREATE INDEX IF NOT EXISTS idx_syntheses_date ON syntheses(date DESC);
   CREATE INDEX IF NOT EXISTS idx_syntheses_created_at ON syntheses(created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_books_user_id ON books(user_id);
-  CREATE INDEX IF NOT EXISTS idx_books_user_id ON books(user_id);
   CREATE INDEX IF NOT EXISTS idx_books_created_at ON books(created_at DESC);
-  CREATE INDEX IF NOT EXISTS idx_book_notes_user_id ON book_notes(user_id);
-  CREATE INDEX IF NOT EXISTS idx_book_notes_user_id ON book_notes(user_id);
   CREATE INDEX IF NOT EXISTS idx_book_notes_book_id ON book_notes(book_id);
   CREATE INDEX IF NOT EXISTS idx_book_notes_page ON book_notes(page);
-  CREATE INDEX IF NOT EXISTS idx_flashcards_user_id ON flashcards(user_id);
-  CREATE INDEX IF NOT EXISTS idx_flashcards_user_id ON flashcards(user_id);
   CREATE INDEX IF NOT EXISTS idx_flashcards_next_review ON flashcards(next_review);
   CREATE INDEX IF NOT EXISTS idx_flashcards_subject ON flashcards(subject);
   CREATE INDEX IF NOT EXISTS idx_flashcards_synthesis_id ON flashcards(synthesis_id);
@@ -114,11 +102,7 @@ console.log('✅ Base de données SQLite initialisée')
  */
 app.get('/api/syntheses', (req, res) => {
   try {
-    const userId = req.query.userId || req.headers['x-user-id']
-    if (!userId) {
-      return res.status(400).json({ error: 'userId required' })
-    }
-    const syntheses = db.prepare('SELECT * FROM syntheses WHERE user_id = ? ORDER BY date DESC').all(userId)
+    const syntheses = db.prepare('SELECT * FROM syntheses ORDER BY date DESC').all()
 
     // Parser les champs JSON
     const parsed = syntheses.map(s => ({
@@ -169,7 +153,6 @@ app.post('/api/syntheses', (req, res) => {
   try {
     const {
       id,
-      userId,
       title,
       subject,
       chapter,
@@ -186,14 +169,13 @@ app.post('/api/syntheses', (req, res) => {
 
     const stmt = db.prepare(`
       INSERT INTO syntheses (
-        id, user_id, title, subject, chapter, date, raw_text, html, source_images,
+        id, title, subject, chapter, date, raw_text, html, source_images,
         page_count, word_count, flashcards_generated, tags, device_id, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     stmt.run(
       id,
-      userId,
       title,
       subject,
       chapter,
@@ -295,15 +277,12 @@ app.delete('/api/syntheses/:id', (req, res) => {
  */
 app.get('/api/sync', (req, res) => {
   try {
-    const { since, userId } = req.query
-    if (!userId) {
-      return res.status(400).json({ error: 'userId required' })
-    }
+    const { since } = req.query
     const sinceTimestamp = since ? parseInt(since) : 0
 
     const syntheses = db
-      .prepare('SELECT * FROM syntheses WHERE user_id = ? AND updated_at > ? ORDER BY updated_at DESC')
-      .all(userId, sinceTimestamp)
+      .prepare('SELECT * FROM syntheses WHERE updated_at > ? ORDER BY updated_at DESC')
+      .all(sinceTimestamp)
 
     const parsed = syntheses.map(s => ({
       ...s,
@@ -326,11 +305,7 @@ app.get('/api/sync', (req, res) => {
 
 app.get('/api/books', (req, res) => {
   try {
-    const userId = req.query.userId || req.headers['x-user-id']
-    if (!userId) {
-      return res.status(400).json({ error: 'userId required' })
-    }
-    const books = db.prepare('SELECT * FROM books WHERE user_id = ? ORDER BY created_at DESC').all(userId)
+    const books = db.prepare('SELECT * FROM books ORDER BY created_at DESC').all()
     const parsed = books.map(b => ({
       id: b.id,
       title: b.title,
@@ -351,10 +326,10 @@ app.get('/api/books', (req, res) => {
 
 app.post('/api/books', (req, res) => {
   try {
-    const { id, userId, title, author, coverImage, totalPages, currentPage, startedAt } = req.body
+    const { id, title, author, coverImage, totalPages, currentPage, startedAt } = req.body
 
-    db.prepare(`INSERT INTO books (id, user_id, title, author, cover_image, total_pages, current_page, started_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, userId, title, author || null, coverImage || null, totalPages || null, currentPage || null,
+    db.prepare(`INSERT INTO books (id, title, author, cover_image, total_pages, current_page, started_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, title, author || null, coverImage || null, totalPages || null, currentPage || null,
       new Date(startedAt).getTime(), Date.now()
     )
 
@@ -400,11 +375,7 @@ app.get('/api/book-notes', (req, res) => {
 
 app.get('/api/books/:bookId/notes', (req, res) => {
   try {
-    const userId = req.query.userId || req.headers['x-user-id']
-    if (!userId) {
-      return res.status(400).json({ error: 'userId required' })
-    }
-    const notes = db.prepare('SELECT * FROM book_notes WHERE book_id = ? AND user_id = ? ORDER BY page, created_at').all(req.params.bookId, userId)
+    const notes = db.prepare('SELECT * FROM book_notes WHERE book_id = ? ORDER BY page, created_at').all(req.params.bookId)
     const parsed = notes.map(n => ({
       id: n.id,
       bookId: n.book_id,
@@ -424,10 +395,10 @@ app.get('/api/books/:bookId/notes', (req, res) => {
 
 app.post('/api/book-notes', (req, res) => {
   try {
-    const { id, userId, bookId, bookTitle, page, title, content, tags } = req.body
+    const { id, bookId, bookTitle, page, title, content, tags } = req.body
 
-    db.prepare(`INSERT INTO book_notes (id, user_id, book_id, book_title, page, title, content, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
-      id, userId, bookId, bookTitle, page || null, title, content, JSON.stringify(tags || []), Date.now()
+    db.prepare(`INSERT INTO book_notes (id, book_id, book_title, page, title, content, tags, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, bookId, bookTitle, page || null, title, content, JSON.stringify(tags || []), Date.now()
     )
 
     res.status(201).json({ message: 'Note created', id })
@@ -468,11 +439,7 @@ app.delete('/api/book-notes/:id', (req, res) => {
  */
 app.get('/api/flashcards', (req, res) => {
   try {
-    const userId = req.query.userId || req.headers['x-user-id']
-    if (!userId) {
-      return res.status(400).json({ error: 'userId required' })
-    }
-    const flashcards = db.prepare('SELECT * FROM flashcards WHERE user_id = ? ORDER BY created_at DESC').all(userId)
+    const flashcards = db.prepare('SELECT * FROM flashcards ORDER BY created_at DESC').all()
 
     const parsed = flashcards.map(f => ({
       id: f.id,
@@ -507,22 +474,21 @@ app.get('/api/flashcards', (req, res) => {
 app.post('/api/flashcards', (req, res) => {
   try {
     const {
-      id, userId, synthesisId, question, answer, explanation, subject, tags,
+      id, synthesisId, question, answer, explanation, subject, tags,
       easeFactor, interval, repetitions, nextReview, lastReviewed,
       reviewCount, correctCount, incorrectCount, createdAt, updatedAt
     } = req.body
 
     const stmt = db.prepare(`
       INSERT OR REPLACE INTO flashcards (
-        id, user_id, synthesis_id, question, answer, explanation, subject, tags,
+        id, synthesis_id, question, answer, explanation, subject, tags,
         ease_factor, interval, repetitions, next_review, last_reviewed,
         review_count, correct_count, incorrect_count, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `)
 
     stmt.run(
       id,
-      userId,
       synthesisId || null,
       question,
       answer,

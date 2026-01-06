@@ -35,7 +35,7 @@ export async function initializeUsers(): Promise<void> {
       if (users.length === 0) {
         console.log('➕ userService - Création de Clément et Alex')
     const clement: User = {
-      id: `user_${Date.now()}`,
+      id: 'user_clement',
       name: 'Clément',
       color: USER_COLORS[0], // Purple-blue
       createdAt: new Date(),
@@ -43,7 +43,7 @@ export async function initializeUsers(): Promise<void> {
     }
 
     const alex: User = {
-      id: `user_${Date.now() + 1}`,
+      id: 'user_alex',
       name: 'Alex',
       color: USER_COLORS[1], // Pink
       createdAt: new Date(),
@@ -54,8 +54,8 @@ export async function initializeUsers(): Promise<void> {
         await db.users.add(alex)
         console.log('✅ userService - Utilisateurs créés avec succès')
 
-        // Clément est l'utilisateur actif par défaut
-        localStorage.setItem(CURRENT_USER_KEY, clement.id)
+        // Pas d'utilisateur actif par défaut - forcer la sélection
+        // localStorage.setItem(CURRENT_USER_KEY, clement.id)
       } else {
         console.log('✅ userService - Utilisateurs déjà existants, pas de création')
       }

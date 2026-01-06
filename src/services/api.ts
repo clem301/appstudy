@@ -3,6 +3,8 @@
  * Permet la synchronisation des synthèses entre appareils
  */
 
+import { getCurrentUserId } from './userService'
+
 // Détection automatique de l'URL du backend
 function getBackendURL(): string {
   // Si on a une URL configurée dans .env, l'utiliser
@@ -53,7 +55,8 @@ export interface SynthesisDTO {
  */
 export async function fetchAllSyntheses(): Promise<SynthesisDTO[]> {
   try {
-    const response = await fetch(`${API_URL}/syntheses`)
+    const userId = await getCurrentUserId()
+    const response = await fetch(`${API_URL}/syntheses?userId=${userId}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -85,12 +88,13 @@ export async function fetchSynthesisById(id: string): Promise<SynthesisDTO> {
  */
 export async function createSynthesis(synthesis: SynthesisDTO): Promise<void> {
   try {
+    const userId = await getCurrentUserId()
     const response = await fetch(`${API_URL}/syntheses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(synthesis),
+      body: JSON.stringify({ ...synthesis, userId }),
     })
 
     if (!response.ok) {
@@ -151,7 +155,8 @@ export async function deleteSynthesis(id: string): Promise<void> {
  */
 export async function syncSyntheses(since: number = 0): Promise<SynthesisDTO[]> {
   try {
-    const response = await fetch(`${API_URL}/sync?since=${since}`)
+    const userId = await getCurrentUserId()
+    const response = await fetch(`${API_URL}/sync?since=${since}&userId=${userId}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -190,15 +195,17 @@ export interface BookDTO {
 }
 
 export async function fetchAllBooks(): Promise<BookDTO[]> {
-  const response = await fetch(`${API_URL}/books`)
+  const userId = await getCurrentUserId()
+  const response = await fetch(`${API_URL}/books?userId=${userId}`)
   return await response.json()
 }
 
 export async function createBook(book: BookDTO): Promise<void> {
+  const userId = await getCurrentUserId()
   await fetch(`${API_URL}/books`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(book),
+    body: JSON.stringify({ ...book, userId }),
   })
 }
 
@@ -221,15 +228,17 @@ export interface BookNoteDTO {
 }
 
 export async function fetchAllBookNotes(): Promise<BookNoteDTO[]> {
-  const response = await fetch(`${API_URL}/book-notes`)
+  const userId = await getCurrentUserId()
+  const response = await fetch(`${API_URL}/book-notes?userId=${userId}`)
   return await response.json()
 }
 
 export async function createBookNote(note: BookNoteDTO): Promise<void> {
+  const userId = await getCurrentUserId()
   await fetch(`${API_URL}/book-notes`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(note),
+    body: JSON.stringify({ ...note, userId }),
   })
 }
 
@@ -260,15 +269,17 @@ export interface FlashcardDTO {
 }
 
 export async function fetchAllFlashcards(): Promise<FlashcardDTO[]> {
-  const response = await fetch(`${API_URL}/flashcards`)
+  const userId = await getCurrentUserId()
+  const response = await fetch(`${API_URL}/flashcards?userId=${userId}`)
   return await response.json()
 }
 
 export async function createFlashcard(flashcard: FlashcardDTO): Promise<void> {
+  const userId = await getCurrentUserId()
   await fetch(`${API_URL}/flashcards`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(flashcard),
+    body: JSON.stringify({ ...flashcard, userId }),
   })
 }
 

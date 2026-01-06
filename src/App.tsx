@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { BottomNav } from './components/ui/BottomNav'
 import { Layout } from './components/Layout'
 import { Home } from './pages/Home'
@@ -9,12 +9,14 @@ import { SynthesisView } from './pages/SynthesisView'
 import { Flashcards } from './pages/Flashcards'
 import { BookNotes } from './pages/BookNotes'
 import { Planning } from './pages/Planning'
+import { UserSelection } from './pages/UserSelection'
 import { syncWithBackend } from './services/storage'
-import { initializeUsers } from './services/userService'
+import { initializeUsers, getCurrentUser } from './services/userService'
 // import './services/resetDatabase' // Désactivé - cause des refreshes en boucle
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
+  const [hasUser, setHasUser] = useState(false)
 
   // Initialiser les utilisateurs et sync backend
   useEffect(() => {
@@ -22,11 +24,19 @@ function App() {
 
     // Initialiser les utilisateurs au démarrage
     initializeUsers()
-      .then(() => {
+      .then(async () => {
         console.log('✅ App.tsx - Utilisateurs initialisés')
+
+        // Vérifier si un utilisateur est sélectionné
+        const currentUser = await getCurrentUser()
+        setHasUser(!!currentUser)
+
         setIsInitialized(true)
-        // Sync immédiate au démarrage
-        return syncWithBackend()
+
+        // Sync seulement si un utilisateur est sélectionné
+        if (currentUser) {
+          return syncWithBackend()
+        }
       })
       .then(() => {
         console.log('✅ App.tsx - Sync backend terminée')
@@ -39,8 +49,12 @@ function App() {
     // Sync automatique toutes les 5 minutes (pas toutes les 30 secondes pour éviter trop de rechargements)
     const interval = setInterval(() => {
       console.log('⏰ App.tsx - Sync automatique déclenchée')
-      syncWithBackend().catch(err => {
-        console.warn('❌ App.tsx - Erreur lors de la sync automatique:', err)
+      getCurrentUser().then(user => {
+        if (user) {
+          syncWithBackend().catch(err => {
+            console.warn('❌ App.tsx - Erreur lors de la sync automatique:', err)
+          })
+        }
       })
     }, 300000) // 5 minutes
 
@@ -65,20 +79,29 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Layout>
-        <div className="min-h-screen">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/scan" element={<Scanner />} />
-            <Route path="/syntheses" element={<Syntheses />} />
-            <Route path="/syntheses/:id" element={<SynthesisView />} />
-            <Route path="/flashcards" element={<Flashcards />} />
-            <Route path="/notes" element={<BookNotes />} />
-            <Route path="/planning" element={<Planning />} />
-          </Routes>
-          <BottomNav />
-        </div>
-      </Layout>
+      <Routes>
+        <Route path="/select-user" element={<UserSelection />} />
+        {hasUser ? (
+          <Route path="*" element={
+            <Layout>
+              <div className="min-h-screen">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/scan" element={<Scanner />} />
+                  <Route path="/syntheses" element={<Syntheses />} />
+                  <Route path="/syntheses/:id" element={<SynthesisView />} />
+                  <Route path="/flashcards" element={<Flashcards />} />
+                  <Route path="/notes" element={<BookNotes />} />
+                  <Route path="/planning" element={<Planning />} />
+                </Routes>
+                <BottomNav />
+              </div>
+            </Layout>
+          } />
+        ) : (
+          <Route path="*" element={<Navigate to="/select-user" replace />} />
+        )}
+      </Routes>
     </BrowserRouter>
   )
 }

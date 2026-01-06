@@ -166,8 +166,10 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
 
         if (!localSyn) {
           // Nouvelle synthèse - ajouter localement
+          const userId = await getCurrentUserId()
           await db.syntheses.add({
             id: backendSyn.id,
+            userId,
             title: backendSyn.title,
             subject: backendSyn.subject,
             chapter: backendSyn.chapter,
@@ -190,8 +192,10 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
           const localTime = localSyn.updatedAt.getTime()
 
           if (backendTime > localTime) {
+            const userId = await getCurrentUserId()
             await db.syntheses.put({
               id: backendSyn.id,
+              userId,
               title: backendSyn.title,
               subject: backendSyn.subject,
               chapter: backendSyn.chapter,
@@ -237,8 +241,10 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
       try {
         const localBook = await db.books.get(backendBook.id)
         if (!localBook) {
+          const userId = await getCurrentUserId()
           await db.books.add({
             id: backendBook.id,
+            userId,
             title: backendBook.title,
             author: backendBook.author,
             coverImage: backendBook.coverImage,
@@ -277,8 +283,10 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
       try {
         const localNote = await db.bookNotes.get(backendNote.id)
         if (!localNote) {
+          const userId = await getCurrentUserId()
           await db.bookNotes.add({
             id: backendNote.id,
+            userId,
             bookId: backendNote.bookId,
             bookTitle: backendNote.bookTitle,
             page: backendNote.page,
@@ -315,8 +323,10 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
       try {
         const localCard = await db.flashcards.get(backendCard.id)
         if (!localCard) {
+          const userId = await getCurrentUserId()
           await db.flashcards.add({
             id: backendCard.id,
+            userId,
             synthesisId: backendCard.synthesisId,
             question: backendCard.question,
             answer: backendCard.answer,

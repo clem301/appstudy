@@ -8,7 +8,19 @@
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit - AppStudy\n\nApplication PWA pour la gestion de l''école à domicile en Belgique.\n\nFonctionnalités :\n- Scanner de cours avec OCR \\(Mistral\\)\n- Synthèses automatiques \\(Gemini 2.5 Flash\\)\n- Bibliothèque de synthèses avec recherche et filtres\n- Notes de lecture synchronisées multi-appareils\n- Flashcards intelligentes avec répétition espacée \\(SM-2\\)\n- Planificateur focalisé sur le point du mercredi\n- Architecture local-first avec IndexedDB\n- Backend Node.js + Express + SQLite\n\nConfiguration de déploiement incluse :\n- PM2 ecosystem config\n- Docker + docker-compose\n- Scripts de mise à jour automatiques\n- Nginx configuration\n- Guides de déploiement détaillés\n\nGenerated with Claude Code\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git config:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit - AppStudy\n\nApplication PWA pour la gestion de l''école à domicile en Belgique.\n\nFonctionnalités :\n- Scanner de cours avec OCR \\(Mistral\\)\n- Synthèses automatiques \\(Gemini 2.5 Flash\\)\n- Bibliothèque de synthèses avec recherche et filtres\n- Notes de lecture synchronisées multi-appareils\n- Flashcards intelligentes avec répétition espacée \\(SM-2\\)\n- Planificateur focalisé sur le point du mercredi\n- Architecture local-first avec IndexedDB\n- Backend Node.js + Express + SQLite\n\nConfiguration de déploiement incluse :\n- PM2 ecosystem config\n- Docker + docker-compose\n- Scripts de mise à jour automatiques\n- Nginx configuration\n- Guides de déploiement détaillés\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(ssh -o StrictHostKeyChecking=no ubuntu@51.77.203.174 \"echo ''Connexion réussie!'' && uname -a\")",
+      "Bash(sshpass -p '895623' ssh -o StrictHostKeyChecking=no ubuntu@51.77.203.174 \"echo ''Connexion réussie!'' && uname -a\")",
+      "Bash(magick:*)",
+      "Bash(python -c:*)",
+      "Bash(pip install:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(python update-server-with-userid.py:*)",
+      "Bash(python:*)"
     ]
   }
 }
