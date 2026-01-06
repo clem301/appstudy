@@ -35,6 +35,19 @@ class AppStudyDatabase extends Dexie {
 
 export const db = new AppStudyDatabase()
 
+// Fonction pour réinitialiser complètement la base de données locale
+export async function resetLocalDatabase(): Promise<void> {
+  console.log('🗑️ Suppression de toutes les données locales...')
+  await db.syntheses.clear()
+  await db.flashcards.clear()
+  await db.tasks.clear()
+  await db.books.clear()
+  await db.bookNotes.clear()
+  await db.projects.clear()
+  await db.personalEvents.clear()
+  console.log('✅ Base de données locale vidée')
+}
+
 // ============ SYNTHESES ============
 
 export async function saveSynthesis(synthesis: Omit<Synthesis, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {

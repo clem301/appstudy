@@ -3,7 +3,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { getStats, getFlashcardsDueForReview, getAllProjects, syncWithBackend } from '../services/storage'
+import { getStats, getFlashcardsDueForReview, getAllProjects, syncWithBackend, resetLocalDatabase } from '../services/storage'
 import { UserSwitcher } from '../components/UserSwitcher'
 import type { Flashcard } from '../types/flashcard'
 import type { Project, ProjectTask } from '../types/project'
@@ -14,6 +14,7 @@ export function Home() {
   const [todayFlashcards, setTodayFlashcards] = useState<Flashcard[]>([])
   const [todayTasks, setTodayTasks] = useState<{ project: Project, task: ProjectTask }[]>([])
   const [syncing, setSyncing] = useState(false)
+  const [lastSyncClick, setLastSyncClick] = useState(0)
 
   useEffect(() => {
     loadStats().catch(err => console.error('Erreur chargement stats:', err))
@@ -62,16 +63,57 @@ export function Home() {
   }
 
   const handleSync = async () => {
-    setSyncing(true)
-    try {
-      await syncWithBackend()
-      await loadStats()
-      await loadTodayItems()
-      console.log('✅ Synchronisation terminée')
-    } catch (err) {
-      console.error('❌ Erreur lors de la synchronisation:', err)
-    } finally {
-      setSyncing(false)
+    // Détection du double-click (moins de 500ms entre 2 clics)
+    const now = Date.now()
+    const isDoubleClick = now - lastSyncClick < 500
+    setLastSyncClick(now)
+
+    if (isDoubleClick) {
+      // Double-click : HARD RESET - vider tout et resynchroniser
+      const confirm = window.confirm('⚠️ RESET COMPLET\n\nCeci va supprimer toutes les données locales et les re-télécharger depuis le serveur.\n\nContinuer ?')
+      if (!confirm) return
+
+      setSyncing(true)
+      try {
+        console.log('🗑️ HARD RESET - Suppression de toutes les données locales...')
+
+        // Vider complètement IndexedDB
+        await resetLocalDatabase()
+
+        // Resynchroniser depuis le serveur
+        const result = await syncWithBackend()
+        console.log(`✅ Resynchronisation terminée: ${result.synced} ajoutées`)
+
+        // Forcer le rechargement de la page
+        window.location.reload()
+      } catch (err) {
+        console.error('❌ Erreur lors du reset:', err)
+        alert('Erreur lors du reset. Vérifiez votre connexion internet.')
+      } finally {
+        setSyncing(false)
+      }
+    } else {
+      // Simple click : synchronisation normale
+      setSyncing(true)
+      try {
+        console.log('🔄 Début de la synchronisation...')
+
+        // Synchroniser avec le backend
+        const result = await syncWithBackend()
+        console.log(`✅ Synchronisation terminée: ${result.synced} ajoutées, ${result.deleted} supprimées, ${result.errors} erreurs`)
+
+        // Recharger les données locales
+        await loadStats()
+        await loadTodayItems()
+
+        // Forcer le rechargement de la page pour afficher les nouvelles données
+        window.location.reload()
+      } catch (err) {
+        console.error('❌ Erreur lors de la synchronisation:', err)
+        alert('Erreur de synchronisation. Vérifiez votre connexion internet.')
+      } finally {
+        setSyncing(false)
+      }
     }
   }
 
