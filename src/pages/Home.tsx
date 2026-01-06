@@ -94,40 +94,37 @@ export function Home() {
 
   return (
     <div className="fixed inset-0 overflow-y-scroll p-5 pb-28 safe-area-top" style={{ WebkitOverflowScrolling: 'touch' }}>
-      {/* User Switcher */}
-      <div className="fixed top-5 right-5 z-50 safe-area-top">
+      {/* Sync Button & User Switcher */}
+      <div className="fixed top-5 right-5 z-50 safe-area-top flex items-center gap-2">
+        <button
+          onClick={handleSync}
+          disabled={syncing}
+          className="flex items-center gap-1 px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Synchroniser avec le serveur"
+        >
+          <svg
+            className={`w-5 h-5 text-white ${syncing ? 'animate-spin' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
         <UserSwitcher />
       </div>
 
       <div className="max-w-lg mx-auto space-y-5">
         {/* Header */}
         <div className="pt-6 pb-2">
-          <div className="flex items-center justify-between mb-1">
-            <h1 className="text-3xl font-bold text-white">
-              AppStudy
-            </h1>
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Synchroniser avec le serveur"
-            >
-              <svg
-                className={`w-5 h-5 text-white ${syncing ? 'animate-spin' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              {syncing && <span className="text-sm text-white">Sync...</span>}
-            </button>
-          </div>
+          <h1 className="text-3xl font-bold text-white mb-1">
+            AppStudy
+          </h1>
           <p className="text-gray-400 text-sm">Mercredi {nextWednesday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
         </div>
 
