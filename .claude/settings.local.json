@@ -27,7 +27,8 @@
       "Bash(ssh -o StrictHostKeyChecking=no ubuntu@51.77.203.174 \"cd /var/www/appstudy && npm install && npx vite build --mode production\")",
       "Bash(ssh -o StrictHostKeyChecking=no ubuntu@51.77.203.174 \"cd /var/www/appstudy/backend && npm install && pm2 restart appstudy-backend && pm2 logs appstudy-backend --lines 20\")",
       "Bash(ssh -o StrictHostKeyChecking=no ubuntu@51.77.203.174 \"cd /var/www/appstudy && git pull origin main && npm install && npx vite build --mode production\")",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "Bash(curl:*)"
     ]
   }
 }

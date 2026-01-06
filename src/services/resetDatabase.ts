@@ -131,5 +131,4 @@ export async function migrateDataToCurrentUser(): Promise<void> {
 // Exposer les fonctions globalement pour debug
 if (typeof window !== 'undefined') {
   (window as any).resetDatabase = resetDatabase
-  (window as any).migrateDataToCurrentUser = migrateDataToCurrentUser
 }

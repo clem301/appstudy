@@ -140,9 +140,9 @@ export const debugLogger = new DebugLogger()
 
 // Exposer les fonctions globalement pour le debug
 if (typeof window !== 'undefined') {
-  (window as any).exportLogs = () => debugLogger.exportLogs()
-  (window as any).downloadLogs = () => debugLogger.downloadLogs()
-  (window as any).clearLogs = () => debugLogger.clearLogs()
+  (window as any).exportLogs = debugLogger.exportLogs.bind(debugLogger)
+  (window as any).downloadLogs = debugLogger.downloadLogs.bind(debugLogger)
+  (window as any).clearLogs = debugLogger.clearLogs.bind(debugLogger)
   (window as any).showLogs = () => {
     console.log('=== LOGS CAPTURÉS ===')
     console.log(debugLogger.exportLogs())

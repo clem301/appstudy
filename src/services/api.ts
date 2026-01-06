@@ -15,6 +15,11 @@ function getBackendURL(): string {
   // Sinon, détecter automatiquement en fonction de l'URL actuelle
   const currentHost = window.location.hostname
 
+  // Si on accède via le domaine de production (appstudy.be), utiliser HTTPS
+  if (currentHost === 'appstudy.be' || currentHost === 'www.appstudy.be') {
+    return 'https://appstudy.be/api'
+  }
+
   // Si on accède via Tailscale (100.x.x.x), utiliser l'IP Tailscale
   if (currentHost.startsWith('100.')) {
     return `http://${currentHost}:3001/api`
@@ -56,7 +61,13 @@ export interface SynthesisDTO {
 export async function fetchAllSyntheses(): Promise<SynthesisDTO[]> {
   try {
     const userId = await getCurrentUserId()
-    const response = await fetch(`${API_URL}/syntheses?userId=${userId}`)
+    const response = await fetch(`${API_URL}/syntheses?userId=${userId}`, {
+      cache: 'no-store', // Force le bypass du cache
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    })
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -156,7 +167,13 @@ export async function deleteSynthesis(id: string): Promise<void> {
 export async function syncSyntheses(since: number = 0): Promise<SynthesisDTO[]> {
   try {
     const userId = await getCurrentUserId()
-    const response = await fetch(`${API_URL}/sync?since=${since}&userId=${userId}`)
+    const response = await fetch(`${API_URL}/sync?since=${since}&userId=${userId}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      },
+    })
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
@@ -196,7 +213,13 @@ export interface BookDTO {
 
 export async function fetchAllBooks(): Promise<BookDTO[]> {
   const userId = await getCurrentUserId()
-  const response = await fetch(`${API_URL}/books?userId=${userId}`)
+  const response = await fetch(`${API_URL}/books?userId=${userId}`, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    },
+  })
   return await response.json()
 }
 
@@ -229,7 +252,13 @@ export interface BookNoteDTO {
 
 export async function fetchAllBookNotes(): Promise<BookNoteDTO[]> {
   const userId = await getCurrentUserId()
-  const response = await fetch(`${API_URL}/book-notes?userId=${userId}`)
+  const response = await fetch(`${API_URL}/book-notes?userId=${userId}`, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    },
+  })
   return await response.json()
 }
 
@@ -270,7 +299,13 @@ export interface FlashcardDTO {
 
 export async function fetchAllFlashcards(): Promise<FlashcardDTO[]> {
   const userId = await getCurrentUserId()
-  const response = await fetch(`${API_URL}/flashcards?userId=${userId}`)
+  const response = await fetch(`${API_URL}/flashcards?userId=${userId}`, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    },
+  })
   return await response.json()
 }
 
