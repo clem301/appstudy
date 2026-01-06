@@ -201,6 +201,7 @@ RÈGLES STRICTES :
    - Fonds colorés (sauf gris clair #e8e8e8, #f9f9f9, #fafafa, #f5f5f5)
    - Balises <img> pour les symboles mathématiques
    - Balises markdown (génère UNIQUEMENT du HTML pur, sans enveloppe de code)
+   - JAMAIS DE TEXTE BLANC (color: #ffffff ou white) - TOUT LE TEXTE DOIT ÊTRE NOIR (#000000) OU GRIS (#666666)
 
 8. SYMBOLES MATHÉMATIQUES :
    - Utilise UNIQUEMENT du texte Unicode pour les symboles mathématiques
