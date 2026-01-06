@@ -61,19 +61,32 @@ export interface SynthesisDTO {
 export async function fetchAllSyntheses(): Promise<SynthesisDTO[]> {
   try {
     const userId = await getCurrentUserId()
+    console.log(`📡 Fetching syntheses from: ${API_URL}/syntheses?userId=${userId}`)
+
+    // Créer une promesse avec timeout de 10 secondes
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 10000)
+
     const response = await fetch(`${API_URL}/syntheses?userId=${userId}`, {
       cache: 'no-store', // Force le bypass du cache
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
       },
+      signal: controller.signal,
     })
+
+    clearTimeout(timeoutId)
+
+    console.log(`✅ Response status: ${response.status}`)
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
-    return await response.json()
+    const data = await response.json()
+    console.log(`✅ Received ${data.length} syntheses`)
+    return data
   } catch (error) {
-    console.error('Error fetching syntheses from backend:', error)
+    console.error('❌ Error fetching syntheses from backend:', error)
     throw error
   }
 }

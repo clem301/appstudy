@@ -151,20 +151,16 @@ export async function syncWithBackend(): Promise<{ synced: number; deleted: numb
   try {
     console.log('🔄 Synchronisation avec le backend...')
 
-    // Vérifier si backend disponible avec timeout
-    const isOnline = await Promise.race([
-      api.checkBackendHealth(),
-      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 2000))
-    ])
-
-    if (!isOnline) {
+    // Essayer directement de récupérer les données (pas de health check)
+    let backendSyntheses: any[] = []
+    try {
+      backendSyntheses = await api.fetchAllSyntheses()
+      console.log(`📥 ${backendSyntheses.length} synthèses sur le backend`)
+    } catch (error) {
       console.log('⚠️ Backend indisponible - mode offline')
+      console.error('Erreur:', error)
       return { synced: 0, deleted: 0, errors: 0 }
     }
-
-    // Récupérer toutes les synthèses du backend
-    const backendSyntheses = await api.fetchAllSyntheses()
-    console.log(`📥 ${backendSyntheses.length} synthèses sur le backend`)
 
     let synced = 0
     let deleted = 0
