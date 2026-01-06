@@ -3,7 +3,7 @@ import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { getStats, getFlashcardsDueForReview, getAllProjects } from '../services/storage'
+import { getStats, getFlashcardsDueForReview, getAllProjects, syncWithBackend } from '../services/storage'
 import { UserSwitcher } from '../components/UserSwitcher'
 import type { Flashcard } from '../types/flashcard'
 import type { Project, ProjectTask } from '../types/project'
@@ -13,6 +13,7 @@ export function Home() {
   const [stats, setStats] = useState({ syntheses: 0, flashcards: 0 })
   const [todayFlashcards, setTodayFlashcards] = useState<Flashcard[]>([])
   const [todayTasks, setTodayTasks] = useState<{ project: Project, task: ProjectTask }[]>([])
+  const [syncing, setSyncing] = useState(false)
 
   useEffect(() => {
     loadStats().catch(err => console.error('Erreur chargement stats:', err))
@@ -60,6 +61,20 @@ export function Home() {
     }
   }
 
+  const handleSync = async () => {
+    setSyncing(true)
+    try {
+      await syncWithBackend()
+      await loadStats()
+      await loadTodayItems()
+      console.log('✅ Synchronisation terminée')
+    } catch (err) {
+      console.error('❌ Erreur lors de la synchronisation:', err)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
   // Calculate days until next Wednesday
   const getNextWednesday = () => {
     const now = new Date()
@@ -87,9 +102,32 @@ export function Home() {
       <div className="max-w-lg mx-auto space-y-5">
         {/* Header */}
         <div className="pt-6 pb-2">
-          <h1 className="text-3xl font-bold text-white mb-1">
-            AppStudy
-          </h1>
+          <div className="flex items-center justify-between mb-1">
+            <h1 className="text-3xl font-bold text-white">
+              AppStudy
+            </h1>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="flex items-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Synchroniser avec le serveur"
+            >
+              <svg
+                className={`w-5 h-5 text-white ${syncing ? 'animate-spin' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {syncing && <span className="text-sm text-white">Sync...</span>}
+            </button>
+          </div>
           <p className="text-gray-400 text-sm">Mercredi {nextWednesday.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' })}</p>
         </div>
 
