@@ -33,13 +33,13 @@ function App() {
 
         setIsInitialized(true)
 
-        // Sync seulement si un utilisateur est sélectionné
-        if (currentUser) {
-          return syncWithBackend()
-        }
+        // DÉSACTIVÉ TEMPORAIREMENT - sync uniquement via le bouton manuel
+        // if (currentUser) {
+        //   return syncWithBackend()
+        // }
       })
       .then(() => {
-        console.log('✅ App.tsx - Sync backend terminée')
+        console.log('✅ App.tsx - Initialization complete')
       })
       .catch(err => {
         console.error('❌ App.tsx - Erreur lors de l\'initialisation:', err)
