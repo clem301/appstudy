@@ -605,12 +605,18 @@ export async function rescheduleFutureTasks(
 
     allProjects.forEach(project => {
       project.tasks.forEach(task => {
-        if (!task.completed && task.scheduledDate && task.scheduledDate >= tomorrow) {
+        // Inclure si :
+        // 1. Pas terminée
+        // 2. ET (Pas encore de date OU Date future)
+        const isUnscheduled = !task.scheduledDate
+        const isFuture = task.scheduledDate && new Date(task.scheduledDate) >= tomorrow
+        
+        if (!task.completed && (isUnscheduled || isFuture)) {
           futureTasks.push({
             projectId: project.id,
             taskId: task.id,
             task,
-            deadline: project.deadline,
+            deadline: new Date(project.deadline),
             projectTitle: project.title
           })
         }
@@ -664,45 +670,41 @@ ${JSON.stringify(tasksToReschedule, null, 2)}
 ${blockedSlots.length > 0 ? JSON.stringify(blockedSlots, null, 2) : 'Aucun événement personnel futur'}
 
 🎯 OBJECTIF :
-Réorganise TOUTES les tâches futures pour une planification optimale en tenant compte :
-1. Des nouvelles contraintes (événements personnels ajoutés)
-2. Des retards éventuels
-3. D'une meilleure répartition de la charge
+Réorganise TOUTES les tâches futures pour une planification optimale et équilibrée.
 
-📋 RÈGLES DE RE-PLANIFICATION :
+⚠️ RÈGLES CRITIQUES :
+1. TÂCHES COURTES : Ne les modifie pas, assigne juste une date.
+2. TÂCHES LONGUES (> 90 min) : TU DOIS LES SEGMENTER en plusieurs sessions de 45 à 90 minutes max.
+   - Exemple : Une tâche de 180 min peut devenir 2 sessions de 90 min ou 3 de 60 min.
+   - Répartis ces sessions sur plusieurs jours si nécessaire.
+   - La somme des durées DOIT être égale à la durée originale.
 
-1. PRIORITÉS :
-   - Respecter les deadlines de chaque projet
-   - Grouper les tâches d'un même projet si possible
-   - Équilibrer la charge de travail quotidienne
-
-2. OPTIMISATION :
-   - Maximum 6h de travail par jour
-   - Éviter les jours surchargés
-   - Laisser des buffers avant les deadlines
-
-3. RESPECT DES CONTRAINTES :
-   - NE JAMAIS planifier pendant les événements personnels
-   - Garder les tâches après demain (pas avant)
-   - Adapter si plusieurs projets ont des deadlines proches
+3. CONTRAINTES :
+   - NE JAMAIS planifier pendant les événements personnels.
+   - Garder les tâches après demain (pas avant).
+   - Maximum 6h de travail total par jour.
 
 FORMAT DE SORTIE :
-Retourne un tableau JSON avec les nouvelles dates pour CHAQUE tâche.
+Retourne un tableau JSON. Si une tâche est segmentée, renvoie plusieurs objets avec le même "originalTaskId".
 
 [
   {
-    "projectId": "project-123",
-    "taskId": "task-456",
+    "projectId": "p1",
+    "originalTaskId": "t1",
     "newScheduledDate": "2026-01-06T10:00:00.000Z",
-    "reasoning": "Déplacé pour éviter conflit avec événement personnel"
+    "newDuration": 60,
+    "suffix": "(Partie 1)",
+    "reasoning": "Segmentation pour alléger la journée"
+  },
+  {
+    "projectId": "p1",
+    "originalTaskId": "t1",
+    "newScheduledDate": "2026-01-07T10:00:00.000Z",
+    "newDuration": 60,
+    "suffix": "(Partie 2)",
+    "reasoning": "Suite du travail le lendemain"
   }
 ]
-
-⚠️ IMPORTANT :
-- Toutes les tâches doivent être re-planifiées (même celles déjà bien placées)
-- Les dates doivent être >= demain
-- Respecter les deadlines de chaque projet
-- Optimiser la charge quotidienne globale
 
 GÉNÈRE maintenant la re-planification au format JSON strict.`
 
@@ -722,35 +724,75 @@ GÉNÈRE maintenant la re-planification au format JSON strict.`
 
     const reschedule = JSON.parse(jsonMatch[0]) as Array<{
       projectId: string
-      taskId: string
+      originalTaskId: string // L'ID de la tâche source (ou taskId si l'IA s'est trompée de nom)
+      taskId?: string // Fallback pour compatibilité
       newScheduledDate: string
+      newDuration?: number // Durée de ce segment
+      suffix?: string // Ex: "(Partie 1)"
       reasoning: string
     }>
 
-    // Appliquer les nouvelles dates
+    // Appliquer les nouvelles dates et gérer la segmentation
     const updatedProjects = allProjects.map(project => {
-      const updatedTasks = project.tasks.map(task => {
-        const rescheduleItem = reschedule.find(
-          r => r.projectId === project.id && r.taskId === task.id
+      // Tâches qui ne sont pas concernées par la re-planification (passées ou aujourd'hui)
+      const untouchedTasks = project.tasks.filter(t => 
+        !tasksToReschedule.some(tr => tr.taskId === t.id)
+      )
+
+      // Reconstruire la liste des tâches futures
+      const newFutureTasks: ProjectTask[] = []
+
+      // Pour chaque tâche qui devait être re-planifiée...
+      const projectTasksToReschedule = tasksToReschedule.filter(t => t.projectId === project.id)
+      
+      projectTasksToReschedule.forEach(originalTask => {
+        // Trouver toutes les nouvelles entrées proposées par l'IA pour cette tâche
+        const instructions = reschedule.filter(r => 
+          (r.originalTaskId === originalTask.taskId) || (r.taskId === originalTask.taskId)
         )
-        if (rescheduleItem) {
-          console.log(`📅 ${task.description}: ${rescheduleItem.reasoning}`)
-          return {
-            ...task,
-            scheduledDate: new Date(rescheduleItem.newScheduledDate)
-          }
+
+        if (instructions.length === 0) {
+          // Si l'IA a oublié cette tâche, on la garde telle quelle (sécurité)
+          const task = project.tasks.find(t => t.id === originalTask.taskId)
+          if (task) newFutureTasks.push(task)
+        } else {
+          // Créer les nouvelles tâches (segments)
+          instructions.forEach((instr, index) => {
+            const isSplit = instructions.length > 1
+            const baseDescription = originalTask.description
+            
+            // Si c'est un split, on crée un nouvel ID, sinon on garde l'ancien
+            // Sauf si c'est le tout premier segment, on peut garder l'ID original pour éviter de perdre l'historique ?
+            // Non, pour être propre, si split : nouveaux IDs. Si pas split : même ID.
+            const newId = isSplit ? `${originalTask.taskId}_split_${index}` : originalTask.taskId
+            
+            const description = isSplit 
+              ? `${baseDescription} ${instr.suffix || `(Partie ${index + 1})`}`
+              : baseDescription
+
+            const duration = instr.newDuration || originalTask.estimatedMinutes
+
+            newFutureTasks.push({
+              id: newId,
+              description: description,
+              estimatedMinutes: duration,
+              completed: false, // On reset le statut car c'est une nouvelle planification
+              scheduledDate: new Date(instr.newScheduledDate)
+            })
+            
+            console.log(`📅 ${description}: ${instr.reasoning} (${duration}min)`)
+          })
         }
-        return task
       })
 
       return {
         ...project,
-        tasks: updatedTasks,
+        tasks: [...untouchedTasks, ...newFutureTasks],
         updatedAt: new Date()
       }
     })
 
-    console.log(`✅ ${reschedule.length} tâches re-planifiées avec succès`)
+    console.log(`✅ ${reschedule.length} segments planifiés avec succès`)
     return updatedProjects
 
   } catch (error) {

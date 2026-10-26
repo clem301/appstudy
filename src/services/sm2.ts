@@ -55,39 +55,60 @@ export function calculateSM2(
   // Si la réponse est incorrecte (quality < 3), recommencer
   if (quality < 3) {
     repetitions = 0
-    interval = 1 // Revoir demain
+    interval = 0 // Revoir aujourd'hui
   } else {
     repetitions += 1
 
-    // Calcul de l'intervalle selon SM-2
+    // Calcul de l'intervalle PERSONNALISÉ (Heures puis Jours)
+    // On utilise un intervalle flottant : 0.x = partie de jour
     if (repetitions === 1) {
-      interval = 1 // Premier jour : revoir demain
+      interval = 4 / 24 // +4 heures
     } else if (repetitions === 2) {
-      interval = 6 // Deuxième jour : revoir dans 6 jours
+      interval = 8 / 24 // +8 heures
+    } else if (repetitions === 3) {
+      interval = 16 / 24 // +16 heures
+    } else if (repetitions === 4) {
+      interval = 1 // 1 jour
+    } else if (repetitions === 5) {
+      interval = 2 // 2 jours
+    } else if (repetitions === 6) {
+      interval = 4 // 4 jours
     } else {
       // Révisions suivantes : intervalle * facteur de facilité
       interval = Math.round(interval * easeFactor)
     }
-  }
+    
+    // PLAFOND MAX : 7 JOURS (Sauf si exam mode, c'est divisé après)
+    if (interval > 7) {
+      interval = 7
+    }
 
-  // Étalement : ajouter un petit délai aléatoire pour éviter
-  // d'avoir toutes les cartes créées le même jour à réviser le même jour
-  let spreadDays = 0
-  if (spreadFactor > 0 && repetitions > 0) {
-    // Ajouter 0-20% de l'intervalle de manière aléatoire
-    const maxSpread = Math.ceil(interval * 0.2 * spreadFactor)
-    spreadDays = Math.floor(Math.random() * maxSpread)
+    // --- MODE EXAMEN (CRAMMING) ---
+    // Si activé, on divise les intervalles par 3
+    const isExamMode = localStorage.getItem('appstudy_exam_mode') === 'true'
+    if (isExamMode && interval > 0) {
+      interval = interval / 3 // On garde les décimales pour les heures
+      console.log('🔥 Mode Examen actif : Intervalle réduit')
+    }
   }
 
   // Calcul de la prochaine date de révision
   const nextReview = new Date()
-  nextReview.setDate(nextReview.getDate() + interval + spreadDays)
-  nextReview.setHours(0, 0, 0, 0) // Minuit pour comparaison facile
+  
+  // Ajouter l'intervalle en millisecondes
+  // (interval est en jours, donc * 24 * 60 * 60 * 1000)
+  const timeToAdd = interval * 24 * 60 * 60 * 1000
+  nextReview.setTime(nextReview.getTime() + timeToAdd)
+
+  // Si l'intervalle est >= 1 jour, on remet à minuit pour être propre
+  if (interval >= 1) {
+      nextReview.setHours(0, 0, 0, 0)
+  }
 
   return {
-    interval: interval + spreadDays,
+    interval: interval, // On stocke l'intervalle précis (même 0.16)
     repetitions,
-    easeFactor: Math.round(easeFactor * 100) / 100, // 2 décimales
+    easeFactor: Math.round(easeFactor * 100) / 100, 
     nextReview,
   }
 }
@@ -96,10 +117,17 @@ export function calculateSM2(
  * Vérifie si une carte doit être révisée aujourd'hui
  */
 export function isDueForReview(card: Flashcard): boolean {
+  const now = new Date()
+  const reviewDate = new Date(card.nextReview)
+  
+  // Si la date de révision contient une heure spécifique (pas minuit), on compare avec l'heure actuelle
+  if (reviewDate.getHours() !== 0) {
+      return reviewDate <= now
+  }
+
+  // Sinon (minuit), on compare juste le jour
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-
-  const reviewDate = new Date(card.nextReview)
   reviewDate.setHours(0, 0, 0, 0)
 
   return reviewDate <= today
@@ -110,15 +138,20 @@ export function isDueForReview(card: Flashcard): boolean {
  * (négatif si en retard)
  */
 export function getDaysUntilReview(card: Flashcard): number {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
+  const now = new Date()
   const reviewDate = new Date(card.nextReview)
-  reviewDate.setHours(0, 0, 0, 0)
 
-  const diffTime = reviewDate.getTime() - today.getTime()
+  const diffTime = reviewDate.getTime() - now.getTime()
+  
+  // Si c'est pour aujourd'hui (moins de 24h et même jour), on peut retourner 0
+  if (diffTime <= 0) return 0
+  
+  // Si c'est pour plus tard dans la journée (ex: +4h), on retourne 0 aussi
+  if (reviewDate.getDate() === now.getDate() && reviewDate.getMonth() === now.getMonth() && reviewDate.getFullYear() === now.getFullYear()) {
+      return 0
+  }
+
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
   return diffDays
 }
 

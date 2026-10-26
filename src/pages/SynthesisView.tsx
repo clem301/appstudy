@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import katex from 'katex'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import {
@@ -128,7 +129,11 @@ export function SynthesisView() {
   const handleDownload = () => {
     if (!synthesis) return
 
-    // Créer un HTML complet pour l'impression/PDF
+    // On pré-traite le contenu pour l'impression (mark -> noir)
+    // Mais on laisse les $...$ pour que KaTeX (via script) les traite
+    let printHtml = synthesis.html.replace(/background: #e8e8e8;/g, 'background: #000; color: #fff;')
+
+    // Créer un HTML complet pour l'impression/PDF avec KaTeX intégré
     const fullHTML = `
 <!DOCTYPE html>
 <html>
@@ -136,6 +141,20 @@ export function SynthesisView() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${synthesis.title}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '$', right: '$', display: false}
+          ],
+          throwOnError : false
+        });
+    });
+  </script>
   <style>
     body {
       background: #ffffff;
@@ -147,12 +166,22 @@ export function SynthesisView() {
       margin: 0 auto;
     }
     @media print {
-      body { padding: 1rem; }
+      body { padding: 0; }
+      .no-print { display: none; }
     }
+    /* Style spécifique synthèse */
+    .definition, .example, .formula, .important, .key-points {
+      break-inside: avoid; /* Empêche de couper les blocs au milieu */
+      page-break-inside: avoid;
+      margin-bottom: 1.5rem;
+    }
+    .definition { border: 2px solid black; padding: 1rem; }
+    .key-points { background: black; color: white; padding: 1rem; }
+    h1, h2, h3 { break-after: avoid; page-break-after: avoid; } /* Titres collés au texte suivant */
   </style>
 </head>
 <body>
-${synthesis.html}
+${printHtml}
 </body>
 </html>
     `
@@ -169,6 +198,105 @@ ${synthesis.html}
     URL.revokeObjectURL(url)
   }
 
+  const handlePrint = () => {
+    if (!synthesis) return
+
+    // ÉCONOMIE D'ENCRE : Au lieu de fond noir, on met un encadré simple
+    let printHtml = synthesis.html.replace(
+      /background: #e8e8e8;/g, 
+      'background: transparent; color: #000; font-weight: bold; border: 1px solid #666; padding: 1px 4px; border-radius: 4px;'
+    )
+
+    const content = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>${synthesis.title}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+        <style>
+          body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #000;
+          }
+          /* Réinitialiser les sauts de page pour éviter les gros blancs */
+          body, html, #root {
+            height: auto !important;
+            overflow: visible !important;
+          }
+
+          /* Titres : on réduit les marges pour coller au texte */
+          h1, h2, h3 { 
+            margin-top: 1rem !important;
+            margin-bottom: 0.2rem !important;
+            page-break-after: avoid; /* Essayer de garder avec le texte suivant */
+          }
+
+          /* Le contenu principal ne doit pas forcer un bloc unique */
+          .synthesis-content > div {
+            page-break-inside: auto;
+          }
+
+          /* Seuls les petits blocs (définitions) sont insécables */
+          .definition, .example, .formula, .important, .key-points {
+            break-inside: avoid;
+            page-break-inside: avoid;
+            margin-bottom: 1rem;
+          }
+          
+          /* Styles ÉCO-ENCRE pour l'impression */
+          .definition { border: 2px solid #000; padding: 1rem; margin: 1rem 0; border-radius: 8px; }
+          
+          /* Les points clés deviennent un cadre blanc avec bordure épaisse au lieu d'un fond noir */
+          .key-points { 
+            background: #fff; 
+            color: #000; 
+            border: 3px double #000; 
+            padding: 1rem; 
+            border-radius: 8px; 
+            margin-bottom: 2rem; 
+          }
+          
+          @media print {
+            body { padding: 0; }
+            @page { margin: 2cm; }
+          }
+        </style>
+      </head>
+      <body>
+        ${printHtml}
+        <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+              delimiters: [
+                  {left: '$$', right: '$$', display: true},
+                  {left: '$', right: '$', display: false}
+              ],
+              throwOnError : false
+            });
+            // Attendre un peu que KaTeX finisse avant d'imprimer
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 1000);
+          });
+        </script>
+      </body>
+      </html>
+    `
+
+    const printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(content)
+      printWindow.document.close()
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen p-5 pb-28 flex items-center justify-center">
@@ -181,8 +309,92 @@ ${synthesis.html}
     return null
   }
 
+  const renderContent = (html: string) => {
+    // Fonction pour remplacer les formules LaTeX par le rendu KaTeX
+    // 1. Remplacer $$...$$ (Block math)
+    let processedHtml = html.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
+      try {
+        return katex.renderToString(tex, { displayMode: true, throwOnError: false })
+      } catch (err) {
+        return match
+      }
+    })
+
+    // 2. Remplacer $...$ (Inline math)
+    // Attention: on évite de matcher des prix comme $10...$20 en vérifiant qu'il n'y a pas d'espace juste après le premier $
+    processedHtml = processedHtml.replace(/\$([^$]+?)\$/g, (match, tex) => {
+      // Ignorer si c'est juste un signe dollar isolé ou prix
+      if (tex.match(/^\s/) || tex.match(/\s$/)) return match
+      
+      try {
+        return katex.renderToString(tex, { displayMode: false, throwOnError: false })
+      } catch (err) {
+        return match
+      }
+    })
+
+    // Remplacement des balises <mark> pour qu'elles soient visibles en noir et blanc
+    processedHtml = processedHtml.replace(/background: #e8e8e8;/g, 'background: #000; color: #fff;')
+
+    return { __html: processedHtml }
+  }
+
   return (
     <div className="fixed inset-0 overflow-y-scroll p-5 pb-28" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <style>{`
+        @media print {
+          /* 1. Forcer l'impression des fonds noirs (Vital pour la lisibilité) */
+          /* ÉCONOMIE D'ENCRE : On remplace les aplats noirs par des bordures */
+          
+          /* Cibler les textes surlignés (Gemini met du style inline background: #000) */
+          [style*="background: #000"] {
+            background-color: transparent !important;
+            color: #000 !important;
+            font-weight: bold !important;
+            border: 1px solid #000 !important;
+            padding: 0 4px !important;
+            border-radius: 4px !important;
+          }
+
+          /* Transformer les blocs "Key Points" (fond noir) en cadres blancs */
+          .key-points {
+            background-color: transparent !important;
+            color: #000 !important;
+            border: 3px double #000 !important;
+          }
+
+          /* 2. Cacher l'interface de l'app (Boutons, menus...) */
+          button, .header-actions, nav, .bottom-nav, .no-print {
+            display: none !important;
+          }
+
+          /* 3. Réinitialiser le layout pour l'impression */
+          body, #root, .fixed {
+            position: relative !important;
+            overflow: visible !important;
+            height: auto !important;
+            background: white !important;
+          }
+
+          .overflow-y-scroll {
+            overflow: visible !important;
+          }
+
+          /* 4. Empêcher de couper les cadres en deux */
+          .definition, .example, .formula, .important, .key-points, h1, h2, h3 {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 1rem;
+          }
+          
+          /* 5. Nettoyer les ombres */
+          .glass-card, .shadow-lg {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+          }
+        }
+      `}</style>
+
       {/* Modal de génération de flashcards */}
       {generating && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
@@ -249,11 +461,12 @@ ${synthesis.html}
               : '🎴 Générer flashcards'}
           </Button>
           <button
-            onClick={handleDownload}
-            className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition-colors"
-            title="Télécharger"
+            onClick={handlePrint}
+            className="px-4 py-2 bg-blue-500/20 text-blue-400 rounded-xl hover:bg-blue-500/30 transition-colors flex items-center gap-2"
+            title="Imprimer ou Sauvegarder en PDF"
           >
-            📥
+            <span>🖨️</span>
+            <span>PDF / Imprimer</span>
           </button>
           <button
             onClick={handleDelete}
@@ -283,9 +496,9 @@ ${synthesis.html}
         </Card>
 
         {/* Synthesis Content */}
-        <div className="bg-white rounded-2xl p-8 shadow-lg">
+        <div className="bg-white rounded-2xl p-8 shadow-lg synthesis-container">
           <div
-            dangerouslySetInnerHTML={{ __html: synthesis.html }}
+            dangerouslySetInnerHTML={renderContent(synthesis.html)}
           />
         </div>
 

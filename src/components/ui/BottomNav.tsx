@@ -10,7 +10,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'home', label: 'Home', icon: '🏠', path: '/' },
+  { id: 'maths', label: 'Maths', icon: '📐', path: '/' },
+  { id: 'home', label: 'Home', icon: '🏠', path: '/dashboard' },
   { id: 'scan', label: 'Scan', icon: '📸', path: '/scan' },
   { id: 'syntheses', label: 'Synthèses', icon: '📚', path: '/syntheses' },
   { id: 'notes', label: 'Notes', icon: '📖', path: '/notes' },

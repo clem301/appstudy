@@ -6,7 +6,7 @@ import type { Book, BookNote } from '../types/bookNote'
 import type { Project, PersonalEvent } from '../types/project'
 import type { User } from '../types/user'
 import { getCurrentUserId } from './userService'
-import * as api from './api'
+import * as supabaseService from './supabase'
 
 class AppStudyDatabase extends Dexie {
   users!: Table<User>
@@ -66,36 +66,15 @@ export async function saveSynthesis(synthesis: Omit<Synthesis, 'id' | 'createdAt
   // 1. Sauvegarde locale d'abord (local-first)
   await db.syntheses.add(newSynthesis as any)
 
-  // 2. Sync au backend (non-bloquant)
-  syncSynthesisToBackend(newSynthesis).catch(err => {
-    console.warn('⚠️ Sync backend échouée (mode offline):', err.message)
-  })
+  // 2. Sync au backend (Supabase)
+  try {
+    await supabaseService.createSynthesis(newSynthesis)
+    console.log('✅ Synthèse sauvegardée sur Supabase')
+  } catch (err: any) {
+    console.warn('⚠️ Sync Supabase échouée (sera rejouée plus tard):', err.message)
+  }
 
   return id
-}
-
-async function syncSynthesisToBackend(synthesis: Synthesis): Promise<void> {
-  try {
-    await api.createSynthesis({
-      id: synthesis.id,
-      title: synthesis.title,
-      subject: synthesis.subject,
-      chapter: synthesis.chapter,
-      date: synthesis.date,
-      rawText: synthesis.rawText,
-      html: synthesis.html,
-      sourceImages: synthesis.sourceImages,
-      pageCount: synthesis.pageCount,
-      wordCount: synthesis.wordCount,
-      flashcardsGenerated: synthesis.flashcardsGenerated,
-      tags: synthesis.tags,
-      createdAt: synthesis.createdAt.getTime(),
-      updatedAt: synthesis.updatedAt.getTime(),
-    })
-    console.log('✅ Synthèse synchronisée au backend')
-  } catch (error) {
-    throw new Error('Backend indisponible')
-  }
 }
 
 export async function getAllSyntheses(): Promise<Synthesis[]> {
@@ -113,9 +92,9 @@ export async function deleteSynthesis(id: string): Promise<void> {
   // Supprimer aussi les flashcards associées
   await db.flashcards.where('synthesisId').equals(id).delete()
 
-  // 2. Sync suppression au backend (non-bloquant)
-  api.deleteSynthesis(id).catch(err => {
-    console.warn('⚠️ Sync suppression backend échouée:', err.message)
+  // 2. Sync suppression au backend
+  supabaseService.deleteSynthesis(id).catch(err => {
+    console.warn('⚠️ Sync suppression Supabase échouée:', err.message)
   })
 }
 
@@ -128,11 +107,11 @@ export async function updateSynthesis(id: string, updates: Partial<Synthesis>): 
     updatedAt: now,
   })
 
-  // 2. Sync au backend (non-bloquant)
+  // 2. Sync au backend
   const synthesis = await db.syntheses.get(id)
   if (synthesis) {
-    syncSynthesisToBackend(synthesis).catch(err => {
-      console.warn('⚠️ Sync mise à jour synthesis backend échouée:', err.message)
+    supabaseService.createSynthesis(synthesis).catch(err => {
+      console.warn('⚠️ Sync mise à jour Supabase échouée:', err.message)
     })
   }
 }
@@ -144,237 +123,122 @@ export async function getSynthesesBySubject(subject: string): Promise<Synthesis[
 }
 
 /**
- * Synchronise avec le backend au démarrage de l'app
- * Récupère les synthèses des autres appareils ET supprime celles qui ont été supprimées
+ * Synchronise avec Supabase au démarrage de l'app
+ * Stratégie : Supabase est la source de vérité. On télécharge tout et on écrase le local.
  */
 export async function syncWithBackend(): Promise<{ synced: number; deleted: number; errors: number }> {
+  if (!supabaseService.isSupabaseEnabled()) {
+    console.log('⚠️ Supabase non configuré - Mode offline uniquement')
+    return { synced: 0, deleted: 0, errors: 0 }
+  }
+
   try {
-    console.log('🔄 Synchronisation avec le backend...')
-
-    // Essayer directement de récupérer les données (pas de health check)
-    let backendSyntheses: any[] = []
-    try {
-      backendSyntheses = await api.fetchAllSyntheses()
-      console.log(`📥 ${backendSyntheses.length} synthèses sur le backend`)
-    } catch (error) {
-      console.log('⚠️ Backend indisponible - mode offline')
-      console.error('Erreur:', error)
-      return { synced: 0, deleted: 0, errors: 0 }
-    }
-
+    console.log('🔄 Synchronisation avec Supabase...')
+    const userId = await getCurrentUserId()
     let synced = 0
-    let deleted = 0
     let errors = 0
 
-    // 1. Synchroniser les synthèses du backend vers local
-    const backendIds = new Set(backendSyntheses.map(s => s.id))
-
-    for (const backendSyn of backendSyntheses) {
-      try {
-        const localSyn = await db.syntheses.get(backendSyn.id)
-
-        if (!localSyn) {
-          // Nouvelle synthèse - ajouter localement
-          const userId = await getCurrentUserId()
-          await db.syntheses.add({
-            id: backendSyn.id,
-            userId,
-            title: backendSyn.title,
-            subject: backendSyn.subject,
-            chapter: backendSyn.chapter,
-            date: new Date(backendSyn.date),
-            rawText: backendSyn.rawText,
-            html: backendSyn.html,
-            sourceImages: backendSyn.sourceImages,
-            pageCount: backendSyn.pageCount,
-            wordCount: backendSyn.wordCount,
-            flashcardsGenerated: backendSyn.flashcardsGenerated,
-            tags: backendSyn.tags,
-            createdAt: new Date(backendSyn.createdAt || Date.now()),
-            updatedAt: new Date(backendSyn.updatedAt || Date.now()),
-          })
+    // --- 1. Syntheses ---
+    try {
+      const remoteSyntheses = await supabaseService.fetchAllSyntheses()
+      await db.transaction('rw', db.syntheses, async () => {
+        await db.syntheses.where('userId').equals(userId).delete()
+        for (const syn of remoteSyntheses) {
+          await db.syntheses.add({ ...syn, userId } as any)
           synced++
-          console.log(`✅ Synthèse ${backendSyn.id} ajoutée`)
-        } else {
-          // Résolution de conflit - la plus récente gagne
-          const backendTime = new Date(backendSyn.updatedAt || 0).getTime()
-          const localTime = localSyn.updatedAt.getTime()
-
-          if (backendTime > localTime) {
-            const userId = await getCurrentUserId()
-            await db.syntheses.put({
-              id: backendSyn.id,
-              userId,
-              title: backendSyn.title,
-              subject: backendSyn.subject,
-              chapter: backendSyn.chapter,
-              date: new Date(backendSyn.date),
-              rawText: backendSyn.rawText,
-              html: backendSyn.html,
-              sourceImages: backendSyn.sourceImages,
-              pageCount: backendSyn.pageCount,
-              wordCount: backendSyn.wordCount,
-              flashcardsGenerated: backendSyn.flashcardsGenerated,
-              tags: backendSyn.tags,
-              createdAt: new Date(backendSyn.createdAt || Date.now()),
-              updatedAt: new Date(backendSyn.updatedAt || Date.now()),
-            })
-            synced++
-            console.log(`🔄 Synthèse ${backendSyn.id} mise à jour`)
-          }
         }
-      } catch (err) {
-        console.error(`❌ Erreur sync ${backendSyn.id}:`, err)
-        errors++
-      }
+      })
+      console.log(`✅ ${remoteSyntheses.length} synthèses synchronisées`)
+    } catch (err) {
+      console.error('❌ Erreur sync syntheses:', err)
+      errors++
     }
 
-    // 2. Supprimer localement les synthèses qui n'existent plus sur le backend
-    const localSyntheses = await db.syntheses.toArray()
-    for (const localSyn of localSyntheses) {
-      if (!backendIds.has(localSyn.id)) {
-        // Cette synthèse a été supprimée sur le backend - la supprimer localement
-        await db.syntheses.delete(localSyn.id)
-        await db.flashcards.where('synthesisId').equals(localSyn.id).delete()
-        deleted++
-        console.log(`🗑️ Synthèse ${localSyn.id} supprimée (n'existe plus sur backend)`)
-      }
-    }
-
-    // 3. Synchroniser les livres
-    const backendBooks = await api.fetchAllBooks()
-    console.log(`📚 ${backendBooks.length} livres sur le backend`)
-    const backendBookIds = new Set(backendBooks.map(b => b.id))
-
-    for (const backendBook of backendBooks) {
-      try {
-        const localBook = await db.books.get(backendBook.id)
-        if (!localBook) {
-          const userId = await getCurrentUserId()
-          await db.books.add({
-            id: backendBook.id,
-            userId,
-            title: backendBook.title,
-            author: backendBook.author,
-            coverImage: backendBook.coverImage,
-            totalPages: backendBook.totalPages,
-            currentPage: backendBook.currentPage,
-            startedAt: new Date(backendBook.startedAt),
-            finishedAt: backendBook.finishedAt ? new Date(backendBook.finishedAt) : undefined,
-            createdAt: new Date(backendBook.createdAt || Date.now()),
-            updatedAt: new Date(backendBook.updatedAt || Date.now()),
-          })
+    // --- 2. Flashcards ---
+    try {
+      const remoteFlashcards = await supabaseService.fetchAllFlashcards()
+      await db.transaction('rw', db.flashcards, async () => {
+        await db.flashcards.where('userId').equals(userId).delete()
+        for (const card of remoteFlashcards) {
+          await db.flashcards.add({ ...card, userId } as any)
           synced++
-          console.log(`✅ Livre ${backendBook.title} ajouté`)
         }
-      } catch (err) {
-        console.error('❌ Erreur sync livre:', err)
-        errors++
-      }
+      })
+      console.log(`✅ ${remoteFlashcards.length} flashcards synchronisées`)
+    } catch (err) {
+      console.error('❌ Erreur sync flashcards:', err)
+      errors++
     }
 
-    const localBooks = await db.books.toArray()
-    for (const localBook of localBooks) {
-      if (!backendBookIds.has(localBook.id)) {
-        await db.books.delete(localBook.id)
-        await db.bookNotes.where('bookId').equals(localBook.id).delete()
-        deleted++
-        console.log(`🗑️ Livre ${localBook.title} supprimé`)
-      }
-    }
-
-    // 4. Synchroniser les notes
-    const backendNotes = await api.fetchAllBookNotes()
-    console.log(`📝 ${backendNotes.length} notes sur le backend`)
-    const backendNoteIds = new Set(backendNotes.map(n => n.id))
-
-    for (const backendNote of backendNotes) {
-      try {
-        const localNote = await db.bookNotes.get(backendNote.id)
-        if (!localNote) {
-          const userId = await getCurrentUserId()
-          await db.bookNotes.add({
-            id: backendNote.id,
-            userId,
-            bookId: backendNote.bookId,
-            bookTitle: backendNote.bookTitle,
-            page: backendNote.page,
-            title: backendNote.title,
-            content: backendNote.content,
-            tags: backendNote.tags,
-            createdAt: new Date(backendNote.createdAt || Date.now()),
-            updatedAt: new Date(backendNote.updatedAt || Date.now()),
-          })
+    // --- 3. Books ---
+    try {
+      const remoteBooks = await supabaseService.fetchAllBooks()
+      await db.transaction('rw', db.books, async () => {
+        await db.books.where('userId').equals(userId).delete()
+        for (const book of remoteBooks) {
+          await db.books.add({ ...book, userId } as any)
           synced++
-          console.log(`✅ Note "${backendNote.title}" ajoutée`)
         }
-      } catch (err) {
-        console.error('❌ Erreur sync note:', err)
-        errors++
-      }
+      })
+      console.log(`✅ ${remoteBooks.length} livres synchronisés`)
+    } catch (err) {
+      console.error('❌ Erreur sync books:', err)
+      errors++
     }
 
-    const localNotes = await db.bookNotes.toArray()
-    for (const localNote of localNotes) {
-      if (!backendNoteIds.has(localNote.id)) {
-        await db.bookNotes.delete(localNote.id)
-        deleted++
-        console.log(`🗑️ Note "${localNote.title}" supprimée`)
-      }
-    }
-
-    // 5. Synchroniser les flashcards
-    const backendFlashcards = await api.fetchAllFlashcards()
-    console.log(`🎴 ${backendFlashcards.length} flashcards sur le backend`)
-    const backendFlashcardIds = new Set(backendFlashcards.map(f => f.id))
-
-    for (const backendCard of backendFlashcards) {
-      try {
-        const localCard = await db.flashcards.get(backendCard.id)
-        if (!localCard) {
-          const userId = await getCurrentUserId()
-          await db.flashcards.add({
-            id: backendCard.id,
-            userId,
-            synthesisId: backendCard.synthesisId,
-            question: backendCard.question,
-            answer: backendCard.answer,
-            explanation: backendCard.explanation,
-            subject: backendCard.subject,
-            tags: backendCard.tags || [],
-            easeFactor: backendCard.easeFactor,
-            interval: backendCard.interval,
-            repetitions: backendCard.repetitions,
-            nextReview: new Date(backendCard.nextReview),
-            lastReviewed: backendCard.lastReviewed ? new Date(backendCard.lastReviewed) : undefined,
-            reviewCount: backendCard.reviewCount,
-            correctCount: backendCard.correctCount,
-            incorrectCount: backendCard.incorrectCount,
-            createdAt: new Date(backendCard.createdAt),
-            updatedAt: new Date(backendCard.updatedAt),
-          })
+    // --- 4. Book Notes ---
+    try {
+      const remoteNotes = await supabaseService.fetchAllBookNotes()
+      await db.transaction('rw', db.bookNotes, async () => {
+        await db.bookNotes.where('userId').equals(userId).delete()
+        for (const note of remoteNotes) {
+          await db.bookNotes.add({ ...note, userId } as any)
           synced++
-          console.log(`✅ Flashcard "${backendCard.question.substring(0, 30)}..." ajoutée`)
         }
-      } catch (err) {
-        console.error('❌ Erreur sync flashcard:', err)
-        errors++
-      }
+      })
+      console.log(`✅ ${remoteNotes.length} notes synchronisées`)
+    } catch (err) {
+      console.error('❌ Erreur sync notes:', err)
+      errors++
     }
 
-    const localFlashcards = await db.flashcards.toArray()
-    for (const localCard of localFlashcards) {
-      if (!backendFlashcardIds.has(localCard.id)) {
-        await db.flashcards.delete(localCard.id)
-        deleted++
-        console.log(`🗑️ Flashcard "${localCard.question.substring(0, 30)}..." supprimée`)
-      }
+    // --- 5. Projects (Planning) ---
+    try {
+      const remoteProjects = await supabaseService.fetchAllProjects()
+      await db.transaction('rw', db.projects, async () => {
+        await db.projects.where('userId').equals(userId).delete()
+        for (const proj of remoteProjects) {
+          await db.projects.add({ ...proj, userId } as any)
+          synced++
+        }
+      })
+      console.log(`✅ ${remoteProjects.length} projets synchronisés`)
+    } catch (err) {
+      console.error('❌ Erreur sync projets:', err)
+      errors++
     }
 
-    console.log(`✅ Sync terminée: ${synced} ajoutées/modifiées, ${deleted} supprimées, ${errors} erreurs`)
-    return { synced, deleted, errors }
+    // --- 6. Personal Events ---
+    try {
+      const remoteEvents = await supabaseService.fetchAllPersonalEvents()
+      await db.transaction('rw', db.personalEvents, async () => {
+        await db.personalEvents.where('userId').equals(userId).delete()
+        for (const evt of remoteEvents) {
+          await db.personalEvents.add({ ...evt, userId } as any)
+          synced++
+        }
+      })
+      console.log(`✅ ${remoteEvents.length} événements synchronisés`)
+    } catch (err) {
+      console.error('❌ Erreur sync events:', err)
+      errors++
+    }
+
+    console.log(`✅ Sync Supabase terminée: ${synced} éléments mis à jour`)
+    return { synced, deleted: 0, errors }
+
   } catch (error) {
-    console.error('❌ Erreur de synchronisation:', error)
+    console.error('❌ Erreur globale sync Supabase:', error)
     return { synced: 0, deleted: 0, errors: 1 }
   }
 }
@@ -394,42 +258,15 @@ export async function saveFlashcard(flashcard: Omit<Flashcard, 'id' | 'createdAt
     updatedAt: now,
   }
 
-  // 1. Sauvegarde locale d'abord (local-first)
+  // 1. Sauvegarde locale
   await db.flashcards.add({ ...newFlashcard, userId } as any)
 
-  // 2. Sync au backend (non-bloquant)
-  syncFlashcardToBackend(newFlashcard).catch(err => {
-    console.warn('⚠️ Sync flashcard backend échouée (mode offline):', err.message)
+  // 2. Sync au backend
+  supabaseService.createFlashcard(newFlashcard).catch(err => {
+    console.warn('⚠️ Sync flashcard Supabase échouée:', err.message)
   })
 
   return id
-}
-
-async function syncFlashcardToBackend(flashcard: Flashcard): Promise<void> {
-  try {
-    await api.createFlashcard({
-      id: flashcard.id,
-      synthesisId: flashcard.synthesisId,
-      question: flashcard.question,
-      answer: flashcard.answer,
-      explanation: flashcard.explanation,
-      subject: flashcard.subject,
-      tags: flashcard.tags,
-      easeFactor: flashcard.easeFactor,
-      interval: flashcard.interval,
-      repetitions: flashcard.repetitions,
-      nextReview: flashcard.nextReview.getTime(),
-      lastReviewed: flashcard.lastReviewed?.getTime(),
-      reviewCount: flashcard.reviewCount,
-      correctCount: flashcard.correctCount,
-      incorrectCount: flashcard.incorrectCount,
-      createdAt: flashcard.createdAt.getTime(),
-      updatedAt: flashcard.updatedAt.getTime(),
-    })
-  } catch (error) {
-    console.error('❌ Sync flashcard backend error:', error)
-    throw error
-  }
 }
 
 export async function getAllFlashcards(): Promise<Flashcard[]> {
@@ -461,8 +298,8 @@ export async function updateFlashcard(id: string, updates: Partial<Flashcard>): 
   // Sync au backend
   const flashcard = await db.flashcards.get(id)
   if (flashcard) {
-    syncFlashcardToBackend(flashcard).catch(err => {
-      console.warn('⚠️ Sync update flashcard backend échouée:', err.message)
+    supabaseService.createFlashcard(flashcard).catch(err => {
+      console.warn('⚠️ Sync update flashcard Supabase échouée:', err.message)
     })
   }
 }
@@ -471,8 +308,8 @@ export async function deleteFlashcard(id: string): Promise<void> {
   await db.flashcards.delete(id)
 
   // Sync suppression au backend
-  api.deleteFlashcard(id).catch(err => {
-    console.warn('⚠️ Sync suppression flashcard backend échouée:', err.message)
+  supabaseService.deleteFlashcard(id).catch(err => {
+    console.warn('⚠️ Sync suppression flashcard Supabase échouée:', err.message)
   })
 }
 
@@ -534,32 +371,12 @@ export async function saveBook(book: Omit<Book, 'id' | 'createdAt' | 'updatedAt'
   // 1. Sauvegarde locale
   await db.books.add({ ...newBook, userId } as any)
 
-  // 2. Sync au backend (non-bloquant)
-  syncBookToBackend(newBook).catch(err => {
-    console.warn('⚠️ Sync book backend échouée:', err.message)
+  // 2. Sync au backend
+  supabaseService.createBook(newBook).catch(err => {
+    console.warn('⚠️ Sync book Supabase échouée:', err.message)
   })
 
   return id
-}
-
-async function syncBookToBackend(book: Book): Promise<void> {
-  try {
-    await api.createBook({
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      coverImage: book.coverImage,
-      totalPages: book.totalPages,
-      currentPage: book.currentPage,
-      startedAt: book.startedAt,
-      finishedAt: book.finishedAt,
-      createdAt: book.createdAt.getTime(),
-      updatedAt: book.updatedAt.getTime(),
-    })
-    console.log('✅ Livre synchronisé au backend')
-  } catch (error) {
-    throw new Error('Backend indisponible')
-  }
 }
 
 export async function getAllBooks(): Promise<Book[]> {
@@ -585,9 +402,9 @@ export async function deleteBook(id: string): Promise<void> {
   // Supprimer aussi les notes associées
   await db.bookNotes.where('bookId').equals(id).delete()
 
-  // 2. Sync suppression au backend (non-bloquant)
-  api.deleteBook(id).catch(err => {
-    console.warn('⚠️ Sync suppression book backend échouée:', err.message)
+  // 2. Sync suppression au backend
+  supabaseService.deleteBook(id).catch(err => {
+    console.warn('⚠️ Sync suppression book Supabase échouée:', err.message)
   })
 }
 
@@ -608,31 +425,12 @@ export async function saveBookNote(note: Omit<BookNote, 'id' | 'createdAt' | 'up
   // 1. Sauvegarde locale
   await db.bookNotes.add({ ...newNote, userId } as any)
 
-  // 2. Sync au backend (non-bloquant)
-  syncBookNoteToBackend(newNote).catch(err => {
-    console.warn('⚠️ Sync note backend échouée:', err.message)
+  // 2. Sync au backend
+  supabaseService.createBookNote(newNote).catch(err => {
+    console.warn('⚠️ Sync note Supabase échouée:', err.message)
   })
 
   return id
-}
-
-async function syncBookNoteToBackend(note: BookNote): Promise<void> {
-  try {
-    await api.createBookNote({
-      id: note.id,
-      bookId: note.bookId,
-      bookTitle: note.bookTitle,
-      page: note.page,
-      title: note.title,
-      content: note.content,
-      tags: note.tags,
-      createdAt: note.createdAt.getTime(),
-      updatedAt: note.updatedAt.getTime(),
-    })
-    console.log('✅ Note synchronisée au backend')
-  } catch (error) {
-    throw new Error('Backend indisponible')
-  }
 }
 
 export async function getAllBookNotes(): Promise<BookNote[]> {
@@ -645,7 +443,7 @@ export async function getBookNotesByBookId(bookId: string): Promise<BookNote[]> 
   const userId = await getCurrentUserId()
   const allNotes = await db.bookNotes.where('bookId').equals(bookId).toArray()
   const notes = allNotes.filter((note: any) => note.userId === userId)
-  // Trier par page (les notes sans page en dernier) puis par date de création
+  // Trier par page
   return notes.sort((a, b) => {
     if (a.page && b.page) return a.page - b.page
     if (a.page && !b.page) return -1
@@ -669,9 +467,9 @@ export async function deleteBookNote(id: string): Promise<void> {
   // 1. Suppression locale
   await db.bookNotes.delete(id)
 
-  // 2. Sync suppression au backend (non-bloquant)
-  api.deleteBookNote(id).catch(err => {
-    console.warn('⚠️ Sync suppression note backend échouée:', err.message)
+  // 2. Sync suppression au backend
+  supabaseService.deleteBookNote(id).catch(err => {
+    console.warn('⚠️ Sync suppression note Supabase échouée:', err.message)
   })
 }
 
@@ -690,7 +488,14 @@ export async function saveProject(project: Omit<Project, 'id' | 'createdAt' | 'u
     updatedAt: now,
   }
 
+  // 1. Sauvegarde locale
   await db.projects.add(newProject as any)
+
+  // 2. Sync au backend
+  supabaseService.createProject(newProject as any).catch(err => {
+    console.warn('⚠️ Sync project Supabase échouée:', err.message)
+  })
+
   return id
 }
 
@@ -710,14 +515,31 @@ export async function getProjectsByCategory(category: string): Promise<Project[]
 }
 
 export async function updateProject(id: string, updates: Partial<Project>): Promise<void> {
+  const now = new Date()
+  
+  // 1. Mise à jour locale
   await db.projects.update(id, {
     ...updates,
-    updatedAt: new Date(),
+    updatedAt: now,
   })
+
+  // 2. Sync au backend
+  const project = await db.projects.get(id)
+  if (project) {
+    supabaseService.createProject(project as any).catch(err => {
+      console.warn('⚠️ Sync update project Supabase échouée:', err.message)
+    })
+  }
 }
 
 export async function deleteProject(id: string): Promise<void> {
+  // 1. Suppression locale
   await db.projects.delete(id)
+
+  // 2. Sync suppression au backend
+  supabaseService.deleteProject(id).catch(err => {
+    console.warn('⚠️ Sync suppression project Supabase échouée:', err.message)
+  })
 }
 
 export async function getUpcomingProjects(): Promise<Project[]> {
@@ -749,7 +571,14 @@ export async function savePersonalEvent(event: Omit<PersonalEvent, 'id' | 'creat
     updatedAt: now,
   }
 
+  // 1. Sauvegarde locale
   await db.personalEvents.add({ ...newEvent, userId } as any)
+
+  // 2. Sync au backend
+  supabaseService.createPersonalEvent(newEvent as any).catch(err => {
+    console.warn('⚠️ Sync event Supabase échouée:', err.message)
+  })
+
   return id
 }
 
@@ -775,14 +604,31 @@ export async function getUpcomingPersonalEvents(): Promise<PersonalEvent[]> {
 }
 
 export async function updatePersonalEvent(id: string, updates: Partial<PersonalEvent>): Promise<void> {
+  const now = new Date()
+
+  // 1. Mise à jour locale
   await db.personalEvents.update(id, {
     ...updates,
-    updatedAt: new Date(),
+    updatedAt: now,
   })
+
+  // 2. Sync au backend
+  const event = await db.personalEvents.get(id)
+  if (event) {
+    supabaseService.createPersonalEvent(event as any).catch(err => {
+      console.warn('⚠️ Sync update event Supabase échouée:', err.message)
+    })
+  }
 }
 
 export async function deletePersonalEvent(id: string): Promise<void> {
+  // 1. Suppression locale
   await db.personalEvents.delete(id)
+
+  // 2. Sync suppression au backend
+  supabaseService.deletePersonalEvent(id).catch(err => {
+    console.warn('⚠️ Sync suppression event Supabase échouée:', err.message)
+  })
 }
 
 // ============ STATS ============

@@ -9,61 +9,37 @@ import { SynthesisView } from './pages/SynthesisView'
 import { Flashcards } from './pages/Flashcards'
 import { BookNotes } from './pages/BookNotes'
 import { Planning } from './pages/Planning'
-import { UserSelection } from './pages/UserSelection'
+import { Auth } from './pages/Auth'
+import { MathsJury } from './pages/MathsJury'
 import { syncWithBackend } from './services/storage'
-import { initializeUsers, getCurrentUser } from './services/userService'
-// import './services/resetDatabase' // Désactivé - cause des refreshes en boucle
+import { getSupabaseUser } from './services/supabase'
 
 function App() {
   const [isInitialized, setIsInitialized] = useState(false)
-  const [hasUser, setHasUser] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  // Initialiser les utilisateurs et sync backend
+  // Vérifier l'authentification au démarrage
   useEffect(() => {
-    console.log('🚀 App.tsx useEffect - Début initialisation')
+    console.log('🚀 App.tsx - Checking auth')
+    
+    getSupabaseUser().then(user => {
+      setIsAuthenticated(!!user)
+      setIsInitialized(true)
+      
+      if (user) {
+        syncWithBackend().catch(console.error)
+      }
+    })
 
-    // Initialiser les utilisateurs au démarrage
-    initializeUsers()
-      .then(async () => {
-        console.log('✅ App.tsx - Utilisateurs initialisés')
-
-        // Vérifier si un utilisateur est sélectionné
-        const currentUser = await getCurrentUser()
-        setHasUser(!!currentUser)
-
-        setIsInitialized(true)
-
-        // DÉSACTIVÉ TEMPORAIREMENT - sync uniquement via le bouton manuel
-        // if (currentUser) {
-        //   return syncWithBackend()
-        // }
-      })
-      .then(() => {
-        console.log('✅ App.tsx - Initialization complete')
-      })
-      .catch(err => {
-        console.error('❌ App.tsx - Erreur lors de l\'initialisation:', err)
-        setIsInitialized(true) // Continuer quand même
-      })
-
-    // Sync automatique toutes les 5 minutes (pas toutes les 30 secondes pour éviter trop de rechargements)
+    // Sync automatique toutes les 30 secondes
     const interval = setInterval(() => {
-      console.log('⏰ App.tsx - Sync automatique déclenchée')
-      getCurrentUser().then(user => {
-        if (user) {
-          syncWithBackend().catch(err => {
-            console.warn('❌ App.tsx - Erreur lors de la sync automatique:', err)
-          })
-        }
-      })
-    }, 300000) // 5 minutes
+      if (isAuthenticated) {
+        syncWithBackend().catch(console.error)
+      }
+    }, 30000)
 
-    // Nettoyage à la fermeture
-    return () => {
-      console.log('🧹 App.tsx - Cleanup useEffect')
-      clearInterval(interval)
-    }
-  }, [])
+    return () => clearInterval(interval)
+  }, [isAuthenticated])
 
   // Afficher un écran de chargement pendant l'initialisation
   if (!isInitialized) {
@@ -71,7 +47,7 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white text-lg">Initialisation...</p>
+          <p className="text-white text-lg">Chargement...</p>
         </div>
       </div>
     )
@@ -80,13 +56,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/select-user" element={<UserSelection />} />
-        {hasUser ? (
+        <Route path="/auth" element={!isAuthenticated ? <Auth /> : <Navigate to="/" replace />} />
+        
+        {isAuthenticated ? (
           <Route path="*" element={
             <Layout>
               <div className="min-h-screen">
                 <Routes>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<MathsJury />} />
+                  <Route path="/dashboard" element={<Home />} />
                   <Route path="/scan" element={<Scanner />} />
                   <Route path="/syntheses" element={<Syntheses />} />
                   <Route path="/syntheses/:id" element={<SynthesisView />} />
@@ -99,7 +77,7 @@ function App() {
             </Layout>
           } />
         ) : (
-          <Route path="*" element={<Navigate to="/select-user" replace />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
         )}
       </Routes>
     </BrowserRouter>

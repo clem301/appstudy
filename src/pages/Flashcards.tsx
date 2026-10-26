@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { getAllFlashcards, getFlashcardsDueForReview, saveFlashcard, deleteFlashcard, updateFlashcard, getAllSyntheses } from '../services/storage'
+import katex from 'katex'
+import { getAllFlashcards, getFlashcardsDueForReview, saveFlashcard, deleteFlashcard, updateFlashcard, getAllSyntheses, deleteSynthesis } from '../services/storage'
 import { createNewFlashcard, isDueForReview, getDaysUntilReview } from '../services/sm2'
 import type { Flashcard, FlashcardRating } from '../types/flashcard'
 import type { Synthesis } from '../types/synthesis'
@@ -14,6 +15,30 @@ interface FolderNode {
   children?: FolderNode[]
   card?: Flashcard
   cardCount?: number
+}
+
+// Helper pour afficher le contenu (texte ou maths)
+const DisplayContent = ({ content }: { content: string }) => {
+  if (!content.includes('$')) return <>{content}</>
+
+  let html = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, tex) => {
+    try {
+      return katex.renderToString(tex, { displayMode: true, throwOnError: false })
+    } catch (err) {
+      return match
+    }
+  })
+
+  html = html.replace(/\$([^$]+?)\$/g, (match, tex) => {
+    if (tex.match(/^\s/) || tex.match(/\s$/)) return match
+    try {
+      return katex.renderToString(tex, { displayMode: false, throwOnError: false })
+    } catch (err) {
+      return match
+    }
+  })
+
+  return <div dangerouslySetInnerHTML={{ __html: html }} />
 }
 
 export function Flashcards() {
@@ -167,30 +192,6 @@ export function Flashcards() {
     return tree
   }
 
-  function getFilteredCards(): Flashcard[] {
-    let cards = selectedSubject === 'all' ? allCards : allCards.filter(c => c.subject === selectedSubject)
-
-    // Trier par matière, puis par cours (synthèse), puis par date de création
-    cards = cards.sort((a, b) => {
-      // 1. Trier par matière
-      if (a.subject !== b.subject) {
-        return a.subject.localeCompare(b.subject)
-      }
-
-      // 2. Trier par cours (synthèse)
-      const synthA = getSynthesisTitle(a.synthesisId) || ''
-      const synthB = getSynthesisTitle(b.synthesisId) || ''
-      if (synthA !== synthB) {
-        return synthA.localeCompare(synthB)
-      }
-
-      // 3. Trier par date de création (plus récentes en premier)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-
-    return cards
-  }
-
   async function handleCreateCard() {
     if (!question.trim() || !answer.trim() || !subject.trim()) return
 
@@ -215,6 +216,36 @@ export function Flashcards() {
     if (confirm('Supprimer cette flashcard ?')) {
       await deleteFlashcard(id)
       await loadFlashcards()
+    }
+  }
+
+  async function handleDeleteFolder(node: FolderNode) {
+    if (node.type === 'synthesis') {
+      const synthesisId = node.id.replace('synthesis-', '')
+      if (confirm(`Supprimer le dossier "${node.name}" et ses ${node.cardCount} cartes ?\n\nCela supprimera également la synthèse associée.`)) {
+        await deleteSynthesis(synthesisId)
+        await loadFlashcards()
+      }
+    } else if (node.type === 'subject') {
+      alert('Pour supprimer une matière, supprimez tous les dossiers qu\'elle contient.')
+    }
+  }
+
+  function handleReviewFolder(node: FolderNode) {
+    let cardsToReview: Flashcard[] = []
+
+    if (node.type === 'synthesis') {
+      const synthesisId = node.id.replace('synthesis-', '')
+      cardsToReview = allCards.filter(c => c.synthesisId === synthesisId)
+    } else if (node.type === 'subject') {
+      cardsToReview = allCards.filter(c => c.subject === node.name)
+    }
+
+    if (cardsToReview.length > 0) {
+      setDueCards(cardsToReview)
+      setMode('review')
+    } else {
+      alert("Ce dossier est vide.")
     }
   }
 
@@ -257,7 +288,9 @@ export function Flashcards() {
                   </span>
                 )}
               </div>
-              <h3 className="font-semibold text-white text-sm">{card.question}</h3>
+              <h3 className="font-semibold text-white text-sm">
+                <DisplayContent content={card.question} />
+              </h3>
             </div>
             <button
               onClick={() => handleDeleteCard(card.id)}
@@ -267,7 +300,9 @@ export function Flashcards() {
             </button>
           </div>
 
-          <p className="text-white/60 text-xs mb-2">{card.answer}</p>
+          <div className="text-white/60 text-xs mb-2">
+            <DisplayContent content={card.answer} />
+          </div>
 
           <div className="flex items-center gap-3 text-xs text-white/50">
             <span>📊 {card.reviewCount}</span>
@@ -307,6 +342,33 @@ export function Flashcards() {
           }`}>
             {node.name}
           </span>
+          
+          {(node.type === 'synthesis' || node.type === 'subject') && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleReviewFolder(node)
+              }}
+              className="p-1.5 text-white/40 hover:text-green-400 hover:bg-white/5 rounded transition mr-1"
+              title="Réviser tout ce dossier"
+            >
+              ▶️
+            </button>
+          )}
+
+          {node.type === 'synthesis' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteFolder(node)
+              }}
+              className="p-1.5 text-white/40 hover:text-red-400 hover:bg-white/5 rounded transition mr-1"
+              title="Supprimer ce dossier"
+            >
+              🗑️
+            </button>
+          )}
+
           {node.cardCount !== undefined && (
             <span className="text-xs bg-white/10 text-white/70 px-2 py-1 rounded">
               {node.cardCount}
@@ -527,13 +589,25 @@ export function Flashcards() {
   }} />
 }
 
-// Composant de révision avec animation 3D flip
+// Composant de révision avec animation 3D flip et mode "Drill" (Bachotage)
 function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () => void }) {
-  const [currentIndex, setCurrentIndex] = useState(0)
+  // File d'attente des cartes à réviser
+  const [queue, setQueue] = useState<Flashcard[]>(cards)
+  // Cartes qui ont déjà été notées une fois dans cette session (pour ne pas fausser les stats SM-2)
+  const [ratedCardIds, setRatedCardIds] = useState<Set<string>>(new Set())
+  
   const [isFlipped, setIsFlipped] = useState(false)
   const [reviewedCount, setReviewedCount] = useState(0)
 
-  if (cards.length === 0 || currentIndex >= cards.length) {
+  // Simulation des futurs intervalles pour l'affichage
+  const formatInterval = (interval: number): string => {
+    if (interval === 0) return 'Maintenant'
+    if (interval < 1) return `${Math.round(interval * 24)}h`
+    return `${Math.round(interval)}j`
+  }
+
+  // Si la file est vide, c'est fini !
+  if (queue.length === 0) {
     return (
       <div className="fixed inset-0 overflow-y-scroll pb-20 p-6 bg-[#0f172a] flex items-center justify-center" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div className="text-center">
@@ -544,9 +618,9 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
           >
             🎉
           </motion.div>
-          <h2 className="text-3xl font-bold text-white mb-4">Félicitations !</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Session terminée !</h2>
           <p className="text-white/70 mb-6">
-            Vous avez révisé {reviewedCount} carte{reviewedCount > 1 ? 's' : ''} !
+            Vous avez maîtrisé {reviewedCount} carte{reviewedCount > 1 ? 's' : ''} aujourd'hui.
           </p>
           <button
             onClick={onComplete}
@@ -559,29 +633,76 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
     )
   }
 
-  const currentCard = cards[currentIndex]
+  const currentCard = queue[0]
+
+  // Simulation rapide des prochains intervalles pour l'affichage (logique simplifiée pour UI)
+  const isExamMode = localStorage.getItem('appstudy_exam_mode') === 'true'
+  const rep = currentCard.repetitions
+  const ef = currentCard.easeFactor
+
+  const calcNext = (ratingQuality: number) => {
+    let nextI = 0
+    if (ratingQuality < 3) {
+      nextI = 0
+    } else {
+      if (rep === 0) nextI = 4/24
+      else if (rep === 1) nextI = 8/24
+      else if (rep === 2) nextI = 16/24
+      else if (rep === 3) nextI = 1
+      else if (rep === 4) nextI = 2
+      else if (rep === 5) nextI = 4
+      else nextI = Math.round(currentCard.interval * ef)
+      
+      if (nextI > 7) nextI = 7
+      if (isExamMode) nextI = nextI / 3
+    }
+    return nextI
+  }
+
+  const nextIntervals = {
+    again: 0, // Toujours 0 (Maintenant)
+    good: calcNext(4) // Intervalle si réussite
+  }
 
   async function handleRating(rating: FlashcardRating) {
     const { calculateSM2 } = await import('../services/sm2')
 
-    // Calculer les nouveaux paramètres SM-2 avec étalement
-    const sm2Result = calculateSM2(currentCard, rating, 1.0)
+    // Est-ce la première fois qu'on note cette carte dans la session ?
+    const isFirstReview = !ratedCardIds.has(currentCard.id)
 
-    // Mettre à jour les statistiques
-    const isCorrect = rating === 'good' || rating === 'easy'
-    const updates = {
-      ...sm2Result,
-      reviewCount: currentCard.reviewCount + 1,
-      correctCount: currentCard.correctCount + (isCorrect ? 1 : 0),
-      incorrectCount: currentCard.incorrectCount + (isCorrect ? 0 : 1),
-      lastReviewed: new Date(),
+    if (isFirstReview) {
+      // 1. Sauvegarder le résultat SM-2 (Intervalle long terme)
+      const sm2Result = calculateSM2(currentCard, rating, 1.0)
+      
+      const isCorrect = rating === 'good' || rating === 'easy'
+      const updates = {
+        ...sm2Result,
+        reviewCount: currentCard.reviewCount + 1,
+        correctCount: currentCard.correctCount + (isCorrect ? 1 : 0),
+        incorrectCount: currentCard.incorrectCount + (isCorrect ? 0 : 1),
+        lastReviewed: new Date(),
+      }
+      
+      await updateFlashcard(currentCard.id, updates)
+      
+      // Marquer comme notée
+      setRatedCardIds(prev => new Set(prev).add(currentCard.id))
     }
 
-    await updateFlashcard(currentCard.id, updates)
+    // 2. Gérer le Drill (File d'attente session)
+    if (rating === 'again' || rating === 'hard') {
+      // Mauvaise réponse : On remet la carte à la fin de la file
+      setQueue(prev => {
+        const [, ...rest] = prev
+        return [...rest, currentCard]
+      })
+      // Pas d'alerte
+    } else {
+      // Bonne réponse : On la retire
+      setQueue(prev => prev.slice(1))
+      setReviewedCount(prev => prev + 1)
+    }
 
-    // Passer à la carte suivante
-    setReviewedCount(prev => prev + 1)
-    setCurrentIndex(prev => prev + 1)
     setIsFlipped(false)
   }
 
@@ -592,7 +713,7 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="text-white/60 text-sm">
-              {currentIndex + 1} / {cards.length}
+              Reste : {queue.length} carte{queue.length > 1 ? 's' : ''}
             </span>
             <button
               onClick={onComplete}
@@ -605,7 +726,7 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
             <motion.div
               className="bg-orange-500 h-2 rounded-full"
               initial={{ width: 0 }}
-              animate={{ width: `${((currentIndex + 1) / cards.length) * 100}%` }}
+              animate={{ width: `${(reviewedCount / (cards.length)) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
@@ -622,7 +743,7 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
         <div className="perspective-1000 mb-8" style={{ minHeight: '400px' }}>
           <motion.div
             className="relative w-full h-full cursor-pointer"
-            onClick={() => !isFlipped && setIsFlipped(true)}
+            onClick={() => setIsFlipped(!isFlipped)} // Toggle
             style={{
               transformStyle: 'preserve-3d',
               minHeight: '400px',
@@ -639,8 +760,8 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
               }}
             >
               <div className="text-4xl mb-6">❓</div>
-              <h2 className="text-2xl font-bold text-white mb-4">
-                {currentCard.question}
+              <h2 className="text-2xl font-bold text-white mb-4 select-text">
+                <DisplayContent content={currentCard.question} />
               </h2>
               {!isFlipped && (
                 <motion.p
@@ -664,13 +785,13 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
               }}
             >
               <div className="text-4xl mb-6">💡</div>
-              <h2 className="text-xl font-bold text-white mb-4">
-                {currentCard.answer}
+              <h2 className="text-xl font-bold text-white mb-4 select-text">
+                <DisplayContent content={currentCard.answer} />
               </h2>
               {currentCard.explanation && (
-                <p className="text-white/70 text-sm mt-4 max-w-md">
-                  {currentCard.explanation}
-                </p>
+                <div className="text-white/70 text-sm mt-4 max-w-md select-text">
+                  <DisplayContent content={currentCard.explanation} />
+                </div>
               )}
             </div>
           </motion.div>
@@ -685,38 +806,20 @@ function ReviewMode({ cards, onComplete }: { cards: Flashcard[], onComplete: () 
           >
             <button
               onClick={() => handleRating('again')}
-              className="p-4 bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 rounded-xl text-white transition"
+              className="p-4 bg-red-500/20 hover:bg-red-500/30 border-2 border-red-500/50 rounded-xl text-white transition flex flex-col items-center justify-center h-32"
             >
-              <div className="text-2xl mb-1">❌</div>
-              <div className="font-bold">Recommencer</div>
-              <div className="text-xs text-white/60">1 jour</div>
-            </button>
-
-            <button
-              onClick={() => handleRating('hard')}
-              className="p-4 bg-yellow-500/20 hover:bg-yellow-500/30 border-2 border-yellow-500/50 rounded-xl text-white transition"
-            >
-              <div className="text-2xl mb-1">😓</div>
-              <div className="font-bold">Difficile</div>
-              <div className="text-xs text-white/60">{Math.ceil(currentCard.interval * 1.2)} jours</div>
+              <div className="text-4xl mb-2">❌</div>
+              <div className="font-bold text-lg">Recommencer</div>
+              <div className="text-sm text-white/60 mt-1">{formatInterval(nextIntervals.again)}</div>
             </button>
 
             <button
               onClick={() => handleRating('good')}
-              className="p-4 bg-blue-500/20 hover:bg-blue-500/30 border-2 border-blue-500/50 rounded-xl text-white transition"
+              className="p-4 bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl text-white transition flex flex-col items-center justify-center h-32"
             >
-              <div className="text-2xl mb-1">👍</div>
-              <div className="font-bold">Bien</div>
-              <div className="text-xs text-white/60">{Math.ceil(currentCard.interval * currentCard.easeFactor)} jours</div>
-            </button>
-
-            <button
-              onClick={() => handleRating('easy')}
-              className="p-4 bg-green-500/20 hover:bg-green-500/30 border-2 border-green-500/50 rounded-xl text-white transition"
-            >
-              <div className="text-2xl mb-1">✨</div>
-              <div className="font-bold">Facile</div>
-              <div className="text-xs text-white/60">{Math.ceil(currentCard.interval * (currentCard.easeFactor + 0.15))} jours</div>
+              <div className="text-4xl mb-2">👍</div>
+              <div className="font-bold text-lg">Bon</div>
+              <div className="text-sm text-white/60 mt-1">{formatInterval(nextIntervals.good)}</div>
             </button>
           </motion.div>
         )}

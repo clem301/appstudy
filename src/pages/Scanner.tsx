@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { Input } from '../components/ui/Input'
-import { processImage } from '../services/openai'
+import { processImage } from '../services/aiPipeline'
 import { saveSynthesis } from '../services/storage'
 
 type Step = 'upload' | 'capture' | 'metadata' | 'processing' | 'success'
@@ -25,8 +25,8 @@ export function Scanner() {
     const files = e.target.files
     if (!files || files.length === 0) return
 
-    // Limiter à 25 images
-    const fileArray = Array.from(files).slice(0, 25)
+    // Limiter à 30 images
+    const fileArray = Array.from(files).slice(0, 30)
 
     // Vérifier que ce sont des images
     const invalidFiles = fileArray.filter(file => !file.type.startsWith('image/'))
@@ -76,8 +76,8 @@ export function Scanner() {
         // Reset l'input pour permettre une nouvelle photo
         e.target.value = ''
 
-        // Réouvrir automatiquement l'appareil photo si moins de 25 photos
-        if (images.length < 24) { // 24 car on vient d'en ajouter une qui sera dans images au prochain render
+        // Réouvrir automatiquement l'appareil photo si moins de 30 photos
+        if (images.length < 29) { // 29 car on vient d'en ajouter une qui sera dans images au prochain render
           setTimeout(() => {
             fileInputRef.current?.click()
           }, 300)
@@ -187,7 +187,7 @@ export function Scanner() {
               <div>
                 <h2 className="text-xl font-bold text-white mb-2">Scanner un cours</h2>
                 <p className="text-gray-400 text-sm">
-                  Jusqu'à 25 pages en une fois
+                  Jusqu'à 30 pages en une fois
                 </p>
               </div>
 
@@ -224,7 +224,7 @@ export function Scanner() {
                 <div className="text-5xl mb-3">📸</div>
                 <h2 className="text-xl font-bold text-white mb-1">Prends tes photos</h2>
                 <p className="text-gray-400 text-sm">
-                  {images.length}/25 page{images.length > 1 ? 's' : ''}
+                  {images.length}/30 page{images.length > 1 ? 's' : ''}
                 </p>
               </div>
 
@@ -236,14 +236,14 @@ export function Scanner() {
                 capture="environment"
                 onChange={handleCameraCapture}
                 className="hidden"
-                disabled={images.length >= 25}
+                disabled={images.length >= 30}
               />
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={images.length >= 25}
-                className={`gradient-button w-full ${images.length >= 25 ? 'opacity-50' : ''}`}
+                disabled={images.length >= 30}
+                className={`gradient-button w-full ${images.length >= 30 ? 'opacity-50' : ''}`}
               >
-                📷 Prendre une photo ({images.length}/25)
+                📷 Prendre une photo ({images.length}/30)
               </button>
 
               {/* Preview miniatures */}
@@ -256,7 +256,7 @@ export function Scanner() {
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       className="text-sm text-blue-400 hover:text-blue-300"
-                      disabled={images.length >= 25}
+                      disabled={images.length >= 30}
                     >
                       + Continuer
                     </button>
@@ -400,7 +400,7 @@ export function Scanner() {
                   {stage === 'ocr' ? 'Extraction du texte...' : 'Génération de la synthèse...'}
                 </h2>
                 <p className="text-gray-400 text-sm">
-                  {stage === 'ocr' ? `GPT-4o lit ${images.length} page${images.length > 1 ? 's' : ''}` : 'o3-mini structure le contenu'}
+                  {stage === 'ocr' ? `Mistral OCR lit ${images.length} page${images.length > 1 ? 's' : ''}` : 'Gemini 2.5 Flash structure le contenu'}
                 </p>
               </div>
 

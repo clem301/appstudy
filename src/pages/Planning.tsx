@@ -41,6 +41,12 @@ export function Planning() {
   const [editTaskDate, setEditTaskDate] = useState('')
 
   // Formulaire nouveau projet
+  const [showSchoolTaskModal, setShowSchoolTaskModal] = useState(false)
+  const [schoolSubject, setSchoolSubject] = useState('')
+  const [schoolDescription, setSchoolDescription] = useState('')
+  const [schoolDuration, setSchoolDuration] = useState('')
+  const [schoolDeadline, setSchoolDeadline] = useState('')
+
   const [quickInput, setQuickInput] = useState('')
   const [newTitle, setNewTitle] = useState('')
   const [newDeadline, setNewDeadline] = useState('')
@@ -92,6 +98,89 @@ export function Planning() {
 
     const hasStarted = project.tasks.some(t => t.completed)
     return hasStarted ? 'in_progress' : 'planning'
+  }
+
+  const handleCreateSchoolTask = async () => {
+    if (!schoolSubject || !schoolDescription || !schoolDuration || !schoolDeadline) {
+      alert('Remplis tous les champs')
+      return
+    }
+
+    setProcessing(true)
+    setProcessingStep('📚 Création du devoir...')
+
+    try {
+      const deadline = new Date(schoolDeadline)
+      const duration = parseInt(schoolDuration)
+
+      // 1. Créer le projet "Devoir"
+      const newProject: Project = {
+        id: `proj_${Date.now()}`,
+        category: 'school',
+        schoolSubCategory: 'homework',
+        title: `Devoir ${schoolSubject}`,
+        description: schoolDescription,
+        deadline,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        status: 'planning',
+        priority: 'high',
+        userEstimatedHours: duration / 60,
+        tasks: [
+          {
+            id: `task_${Date.now()}`,
+            description: schoolDescription,
+            estimatedMinutes: duration,
+            completed: false,
+            // Pas de date planifiée pour l'instant, l'IA va le faire
+          }
+        ]
+      }
+
+      // Sauvegarder ce nouveau projet
+      const savedId = await saveProject(newProject)
+      const savedProject = { ...newProject, id: savedId }
+
+      // 2. Lancer la re-planification globale
+      setProcessingStep('🤖 L\'IA réorganise ton agenda...')
+      
+      // On combine les projets existants + le nouveau
+      const allProjectsToSchedule = [...projects, savedProject]
+      
+      const rescheduledProjects = await rescheduleFutureTasks(
+        allProjectsToSchedule,
+        personalEvents
+      )
+
+      // 3. Appliquer les changements
+      setProcessingStep('💾 Sauvegarde du nouveau planning...')
+      for (const project of rescheduledProjects) {
+        // On met à jour uniquement les tâches re-planifiées
+        await updateProject(project.id, { tasks: project.tasks })
+      }
+
+      await loadData()
+      setShowSchoolTaskModal(false)
+      resetSchoolForm()
+      
+      setProcessingStep('✅ Planning optimisé !')
+      setTimeout(() => {
+        setProcessing(false)
+        setProcessingStep('')
+      }, 1500)
+
+    } catch (error) {
+      console.error('Erreur:', error)
+      alert('Erreur lors de la création')
+      setProcessing(false)
+    }
+  }
+
+  const resetSchoolForm = () => {
+    setSchoolSubject('')
+    setSchoolDescription('')
+    setSchoolDuration('')
+    setSchoolDeadline('')
   }
 
   const handleQuickCreate = async () => {
@@ -412,18 +501,26 @@ export function Planning() {
             <Button
               variant="gradient"
               onClick={() => setShowNewEventModal(true)}
-              className="flex-1 sm:flex-none text-sm sm:text-base"
+              className="flex-1 sm:flex-none text-sm sm:text-base bg-red-500 hover:bg-red-600"
             >
-              <span className="hidden sm:inline">🚫 Événement perso</span>
-              <span className="sm:hidden">🚫 Perso</span>
+              <span className="hidden sm:inline">🚫 Perso</span>
+              <span className="sm:hidden">🚫</span>
+            </Button>
+            <Button
+              variant="gradient"
+              onClick={() => setShowSchoolTaskModal(true)}
+              className="flex-1 sm:flex-none text-sm sm:text-base bg-blue-500 hover:bg-blue-600"
+            >
+              <span className="hidden sm:inline">📚 Devoir</span>
+              <span className="sm:hidden">📚</span>
             </Button>
             <Button
               variant="gradient"
               onClick={() => setShowNewProjectModal(true)}
               className="flex-1 sm:flex-none text-sm sm:text-base"
             >
-              <span className="hidden sm:inline">+ Nouveau projet</span>
-              <span className="sm:hidden">+ Projet</span>
+              <span className="hidden sm:inline">+ Projet</span>
+              <span className="sm:hidden">+</span>
             </Button>
           </div>
         </div>
@@ -597,6 +694,99 @@ export function Planning() {
                         disabled={!quickInput || !newDeadline}
                       >
                         🤖 Créer avec IA
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Modal nouveau devoir école */}
+        <AnimatePresence>
+          {showSchoolTaskModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+              onClick={() => !processing && setShowSchoolTaskModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="glass-card p-6 max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 className="text-2xl font-bold text-white mb-4">📚 Nouveau Devoir</h2>
+
+                {processing ? (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-4 animate-bounce">🤖</div>
+                    <p className="text-white mb-2">L'IA réorganise ton agenda...</p>
+                    <p className="text-gray-400 text-sm">{processingStep}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Matière *</label>
+                      <input
+                        type="text"
+                        value={schoolSubject}
+                        onChange={(e) => setSchoolSubject(e.target.value)}
+                        placeholder="Ex: Maths, Histoire..."
+                        className="w-full bg-gray-700/50 text-white rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Quoi faire ? *</label>
+                      <textarea
+                        value={schoolDescription}
+                        onChange={(e) => setSchoolDescription(e.target.value)}
+                        placeholder="Ex: Exercices page 42, Réviser chapitre 3..."
+                        className="w-full bg-gray-700/50 text-white rounded-xl p-3 min-h-[80px]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Durée estimée (minutes) *</label>
+                      <input
+                        type="number"
+                        value={schoolDuration}
+                        onChange={(e) => setSchoolDuration(e.target.value)}
+                        placeholder="Ex: 60"
+                        className="w-full bg-gray-700/50 text-white rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm text-gray-400 mb-2">Pour quand ? *</label>
+                      <input
+                        type="datetime-local"
+                        value={schoolDeadline}
+                        onChange={(e) => setSchoolDeadline(e.target.value)}
+                        className="w-full bg-gray-700/50 text-white rounded-xl p-3"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 mt-6">
+                      <Button
+                        variant="glass"
+                        onClick={() => setShowSchoolTaskModal(false)}
+                        className="flex-1"
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        variant="gradient"
+                        onClick={handleCreateSchoolTask}
+                        className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!schoolSubject || !schoolDescription || !schoolDuration || !schoolDeadline || processing}
+                      >
+                        {processing ? 'Planification...' : 'Ajouter & Équilibrer'}
                       </Button>
                     </div>
                   </div>

@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maths Jury CESS</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: copie d'examen quadrillée — colonne de lecture 900px, rail de chapitres à gauche sur PC */
+:root{
+  --bg:#f6f6fb; --paper:#ffffff; --ink:#1c1b2e; --muted:#5d5b78; --line:#e3e1ef; --grid:#efd7ef;
+  --accent:#8a2a8a; --accent-ink:#ffffff; --accent-soft:#f6e6f6;
+  --ok:#1f7a4d; --ok-soft:#e1f3ea; --mid:#9a6200; --mid-soft:#fbf0d9; --ko:#b3261e; --ko-soft:#fbe5e3;
+  --code:#f1f0f8;
+  --f-display:"Familjen Grotesk",system-ui,sans-serif; --f-body:"Atkinson Hyperlegible",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14131f; --paper:#1d1c2b; --ink:#ecebf5; --muted:#a6a3c2; --line:#302e45; --grid:#3a2440;
+  --accent:#e08fe0; --accent-ink:#1d0f1d; --accent-soft:#3a2240;
+  --ok:#6fd3a0; --ok-soft:#173528; --mid:#f0c060; --mid-soft:#3a2e12; --ko:#ff8a80; --ko-soft:#3d1c1a; --code:#262537; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14131f; --paper:#1d1c2b; --ink:#ecebf5; --muted:#a6a3c2; --line:#302e45; --grid:#3a2440;
+  --accent:#e08fe0; --accent-ink:#1d0f1d; --accent-soft:#3a2240;
+  --ok:#6fd3a0; --ok-soft:#173528; --mid:#f0c060; --mid-soft:#3a2e12; --ko:#ff8a80; --ko-soft:#3d1c1a; --code:#262537; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;margin:0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px;max-width:1240px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}.rail{position:static!important;max-height:none!important}}
+.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start;max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:4px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.01em;margin:4px 0 2px}
+.brand small{display:block;font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--muted);letter-spacing:0}
+.nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:7px 10px;border-radius:8px;cursor:pointer}
+.nav:hover{background:var(--accent-soft)}
+.nav.on{background:var(--accent);color:var(--accent-ink)}
+.nav .n{font-family:var(--f-mono);font-size:12px;opacity:.75;min-width:22px}
+.nav .bar{margin-left:auto;width:38px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}
+.nav .bar i{display:block;height:100%;background:var(--ok)}
+.nav.on .bar{background:rgba(255,255,255,.35)}
+.sep{height:1px;background:var(--line);margin:8px 0}
+main{min-width:0}
+h1,h2,h3{font-family:var(--f-display);letter-spacing:-.01em;text-wrap:balance;margin:0}
+h1{font-size:30px;line-height:1.15}
+h2{font-size:22px;margin-top:28px;margin-bottom:10px}
+h3{font-size:18px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.lead{color:var(--muted);max-width:68ch;margin:8px 0 0}
+.paper{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.grid-bg{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;background-color:var(--paper)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 14px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;font:inherit;font-size:15px;padding:9px 14px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:700}
+.btn{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ok{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.btn.mid{background:var(--mid-soft);color:var(--mid);border-color:var(--mid)}
+.btn.ko{background:var(--ko-soft);color:var(--ko);border-color:var(--ko)}
+.btn:focus-visible,.nav:focus-visible,.tab:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stack{display:flex;flex-direction:column;gap:14px}
+.chip{display:inline-block;font-family:var(--f-mono);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.chip.off{background:var(--code);color:var(--muted)}
+.chip.ok{background:var(--ok-soft);color:var(--ok)} .chip.mid{background:var(--mid-soft);color:var(--mid)} .chip.ko{background:var(--ko-soft);color:var(--ko)}
+.recipe{border-left:4px solid var(--accent);border-radius:0;padding:4px 0 4px 16px}
+.recipe h3{margin-bottom:4px}
+.recipe .when{color:var(--muted);font-size:15px;margin:0 0 8px}
+ol.steps{margin:0;padding-left:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:8px}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px}
+ol.steps>li::before{content:counter(s);font-family:var(--f-mono);font-weight:600;font-size:13px;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;margin-top:2px}
+.trap{background:var(--ko-soft);border-radius:8px;padding:10px 14px;font-size:15px}
+.trap b{color:var(--ko)}
+.memo{background:var(--code);border-radius:8px;padding:10px 14px;font-size:15px}
+table.t{border-collapse:collapse;width:100%;font-size:15px}
+table.t td,table.t th{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+table.t th{background:var(--code);font-weight:700}
+.tw{overflow-x:auto}
+.ex{display:flex;flex-direction:column;gap:12px}
+.ex .head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ex .head h3{flex:1;min-width:200px}
+.stepbox{display:flex;flex-direction:column;gap:8px}
+.step{background:var(--code);border-radius:8px;padding:10px 14px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+.step .k{font-family:var(--f-mono);font-size:12px;color:var(--accent);padding-top:3px;white-space:nowrap}
+.answer{background:var(--ok-soft);border:1px solid var(--ok);border-radius:8px;padding:10px 14px}
+.answer b{color:var(--ok)}
+.fig{max-width:460px}
+.fig svg{width:100%;height:auto;display:block}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.flash{min-height:260px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
+.flash .q{font-size:21px;line-height:1.45}
+.flash .a{border-top:1px dashed var(--line);padding-top:14px;font-size:18px}
+.meter{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+.plan li{display:grid;grid-template-columns:auto 64px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.plan{list-style:none;margin:0;padding:0}
+.plan .t{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.plan input{width:18px;height:18px;accent-color:var(--accent)}
+.plan .done{opacity:.55;text-decoration:line-through}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.kpi{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi .v{font-family:var(--f-display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:13px;color:var(--muted)}
+.timer{font-family:var(--f-mono);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.ntab{font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.ntab td,.ntab th{padding:3px 6px;text-align:right}
+.muted{color:var(--muted)}
+mjx-container{max-width:100%;overflow-x:auto;overflow-y:hidden}
+mjx-container[display="true"]{margin:.5em 0!important}
+p{margin:0 0 8px}
+ul{margin:0;padding-left:20px}
+@media (prefers-reduced-motion:no-preference){.fade{animation:f .18s ease-out}@keyframes f{from{opacity:.4;transform:translateY(3px)}to{opacity:1;transform:none}}}
+</style>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},svg:{fontCache:'global'},startup:{typeset:false}};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+
+</head>
+<body>
+<div class="wrap">
+  <nav class="rail" id="rail" aria-label="Chapitres"></nav>
+  <main id="app"></main>
+</div>
+
+<script>
+const R=String.raw;
+
+/* ---------- Graphiques ---------- */
+function plot(o){
+  const W=o.w||420,H=o.h||280,[x0,x1]=o.x,[y0,y1]=o.y,P=22;
+  const sx=x=>P+(x-x0)/(x1-x0)*(W-2*P), sy=y=>H-P-(y-y0)/(y1-y0)*(H-2*P);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${o.label||'graphique'}" style="font-family:var(--f-mono)">`;
+  s+=`<rect x="0" y="0" width="${W}" height="${H}" fill="var(--paper)"/>`;
+  const st=o.step||1;
+  for(let x=Math.ceil(x0/st)*st;x<=x1+1e-9;x+=st)s+=`<line x1="${sx(x)}" y1="${sy(y0)}" x2="${sx(x)}" y2="${sy(y1)}" stroke="var(--grid)" stroke-width="1"/>`;
+  const sty=o.ystep||st;
+  for(let y=Math.ceil(y0/sty)*sty;y<=y1+1e-9;y+=sty)s+=`<line x1="${sx(x0)}" y1="${sy(y)}" x2="${sx(x1)}" y2="${sy(y)}" stroke="var(--grid)" stroke-width="1"/>`;
+  if(o.fill){const f=o.fill;let d=`M${sx(f.a)},${sy(0)}`;for(let i=0;i<=120;i++){const x=f.a+(f.b-f.a)*i/120;d+=` L${sx(x)},${sy(f.f(x))}`}d+=` L${sx(f.b)},${sy(0)} Z`;s+=`<path d="${d}" fill="var(--accent-soft)" stroke="none"/>`}
+  if(y0<=0&&y1>=0)s+=`<line x1="${sx(x0)}" y1="${sy(0)}" x2="${sx(x1)}" y2="${sy(0)}" stroke="var(--ink)" stroke-width="1.4"/>`;
+  if(x0<=0&&x1>=0&&!o.noYaxis)s+=`<line x1="${sx(0)}" y1="${sy(y0)}" x2="${sx(0)}" y2="${sy(y1)}" stroke="var(--ink)" stroke-width="1.4"/>`;
+  const xt=o.xticks||(o.nolabels?[]:range(x0,x1,o.lx||st).map(v=>[v,fmt(v)]));
+  xt.forEach(([v,l])=>{if(v===0&&!o.xticks)return;s+=`<text x="${sx(v)}" y="${Math.min(H-4,sy(0)+14)}" font-size="11" text-anchor="middle" fill="var(--muted)">${l}</text>`});
+  const yt=o.yticks||(o.nolabels?[]:range(y0,y1,o.ly||sty).map(v=>[v,fmt(v)]));
+  const yx=(x0<=0&&x1>=0)?sx(0):sx(x0);
+  yt.forEach(([v,l])=>{if(v===0)return;s+=`<text x="${yx-5}" y="${sy(v)+4}" font-size="11" text-anchor="end" fill="var(--muted)">${l}</text>`});
+  (o.vl||[]).forEach(v=>s+=`<line x1="${sx(v)}" y1="${sy(y0)}" x2="${sx(v)}" y2="${sy(y1)}" stroke="var(--ko)" stroke-dasharray="5 4" stroke-width="1.4"/>`);
+  (o.hl||[]).forEach(v=>s+=`<line x1="${sx(x0)}" y1="${sy(v)}" x2="${sx(x1)}" y2="${sy(v)}" stroke="var(--ko)" stroke-dasharray="5 4" stroke-width="1.4"/>`);
+  (o.fns||[]).forEach(fn=>{const f=typeof fn==='function'?fn:fn.f;const a=fn.a??x0,b=fn.b??x1;let d='',pen=false,py=null;
+    for(let i=0;i<=600;i++){const x=a+(b-a)*i/600;const y=f(x);
+      if(!isFinite(y)||y<y0-(y1-y0)||y>y1+(y1-y0)||(py!==null&&Math.abs(y-py)>(y1-y0)*0.9)){pen=false;py=isFinite(y)?y:null;continue}
+      const Y=Math.max(y0-(y1-y0)*.2,Math.min(y1+(y1-y0)*.2,y));d+=(pen?' L':' M')+sx(x).toFixed(1)+','+sy(Y).toFixed(1);pen=true;py=y}
+    s+=`<path d="${d}" fill="none" stroke="${fn.c||'var(--ink)'}" stroke-width="2.2" ${fn.dash?'stroke-dasharray="6 4"':''}/>`});
+  (o.pts||[]).forEach(([x,y,l])=>{s+=`<circle cx="${sx(x)}" cy="${sy(y)}" r="4" fill="${o.ptc||'var(--accent)'}"/>`;if(l)s+=`<text x="${sx(x)+6}" y="${sy(y)-6}" font-size="11" fill="var(--ink)">${l}</text>`});
+  if(o.title)s+=`<text x="${P}" y="14" font-size="12" fill="var(--ink)" font-weight="600">${o.title}</text>`;
+  return s+'</svg>';
+}
+function range(a,b,st){const r=[];for(let v=Math.ceil(a/st)*st;v<=b+1e-9;v+=st)r.push(+v.toFixed(6));return r}
+function fmt(v){return String(+v.toFixed(2)).replace('.',',')}
+const PI=Math.PI, pdf=(m,s)=>x=>Math.exp(-(((x-m)/s)**2)/2)/(s*Math.sqrt(2*PI));
+const piTicks=(n,d,lab)=>{const r=[];for(let k=0;k<=n;k++)r.push([k*PI/d,lab(k)]);return r};
+
+const PLOTS={
+  q1:()=>plot({x:[-0.5,5.5],y:[8,9.1],ystep:0.1,ly:0.1,step:1,pts:[[0,8.1],[1,8.3],[2,8.5],[3,8.7],[5,8.9]],xticks:[[0,'2014'],[1,'2015'],[2,'2016'],[3,'2017'],[4,'2018'],[5,'2019']],label:'salaire minimum horaire'}),
+  q1s:()=>plot({x:[-0.5,5.5],y:[8,9.1],ystep:0.1,ly:0.1,pts:[[0,8.1],[1,8.3],[2,8.5],[3,8.7],[5,8.9],[4,8.79,'estimation 8,79']],xticks:[[0,'2014'],[1,'2015'],[2,'2016'],[3,'2017'],[4,'2018'],[5,'2019']],fns:[{f:t=>0.16216*t+8.14324,c:'var(--accent)'}]}),
+  cA:()=>plot({w:240,h:200,x:[0,9],y:[0,10],nolabels:true,title:'A',pts:[[1,2.1],[2,3],[3,3.9],[4,5.2],[5,6],[6,6.8],[7,8.1],[8,9]]}),
+  cB:()=>plot({w:240,h:200,x:[0,9],y:[0,10],nolabels:true,title:'B',pts:[[1,9],[2,8.2],[3,7.5],[4,5.9],[5,5.5],[6,3.8],[7,3.4],[8,1.9]]}),
+  cC:()=>plot({w:240,h:200,x:[0,9],y:[0,10],nolabels:true,title:'C',pts:[[1,3],[2,2],[3,5],[4,3.5],[5,6],[6,4.5],[7,7.5],[8,6]]}),
+  cD:()=>plot({w:240,h:200,x:[0,9],y:[0,10],nolabels:true,title:'D',pts:[[1,5],[2,2],[3,7],[4,4],[5,3],[6,8],[7,4.5],[8,5]]}),
+  q32:()=>plot({x:[-8,9],y:[-7,5.5],fns:[x=>(x+4)/(2*x+1)],vl:[-0.5],hl:[0.5],pts:[[4,8/9]],label:'f(x)=(x+4)/(2x+1)'}),
+  q41:()=>plot({x:[-3,5.5],y:[-3.5,4.5],fns:[x=>-x*(x-3)**2/4],pts:[[1,-1,'min (1;−1)'],[3,0,'max (3;0)']]}),
+  g1:()=>plot({w:240,h:220,x:[-1.5,4.5],y:[-3.5,2.5],title:'Graphique 1',fns:[x=>-0.75*x*(x-3)]}),
+  g2:()=>plot({w:240,h:220,x:[-1.5,4.5],y:[-3.5,2.5],title:'Graphique 2',fns:[x=>-0.75*(x-1)*(x-3)]}),
+  g3:()=>plot({w:240,h:220,x:[-1.5,4.5],y:[-1.5,4.5],title:'Graphique 3',fns:[x=>0.75*(x-1)*(x-3)]}),
+  q5:()=>plot({x:[-0.2,8.6],y:[-3,3],ystep:0.5,ly:1,step:PI/3,xticks:piTicks(8,3,k=>k===0?'0':k===3?'π':k===6?'2π':k+'π/3'),fns:[x=>2.5*Math.sin(1.5*x)],pts:[[PI/3,2.5,'max'],[PI,-2.5,'min (π ; −5/2)'],[7*PI/3,-2.5,'min (7π/3 ; −5/2)']],label:'f(x)=5/2 sin(3x/2)'}),
+  sin2x:()=>plot({x:[-0.2,6.6],y:[-1.5,1.5],ystep:0.5,ly:1,step:PI/4,xticks:piTicks(8,4,k=>k===0?'0':k===4?'π':k===8?'2π':k%2===0?(k/2)+'π/2':k+'π/4'),fns:[x=>Math.sin(2*x)],label:'mystère'}),
+  tide:()=>plot({x:[0,24],y:[0,5.5],step:3,ly:1,fns:[t=>2*Math.sin(PI*t/6)+3],hl:[4],pts:[[1,4,'t=1'],[5,4,'t=5']],label:'marée'}),
+  b5:()=>plot({x:[-0.2,6.6],y:[-2.5,4.5],step:PI/4,ly:1,xticks:piTicks(8,4,k=>k===0?'0':k===4?'π':k===8?'2π':k%2===0?(k/2)+'π/2':k+'π/4'),fns:[x=>3*Math.cos(2*x)+1],hl:[1],label:'3cos(2x)+1'}),
+  n72:()=>plot({x:[300,900],y:[0,0.0058],step:75,ystep:0.001,yticks:[],noYaxis:true,xticks:[[375,'375'],[450,'450'],[525,'525'],[600,'600'],[675,'675'],[750,'750'],[825,'825']],fns:[pdf(600,75)],fill:{f:pdf(600,75),a:450,b:750},label:'N(600;75), 95 % entre 450 et 750'}),
+  n72b:()=>plot({x:[300,900],y:[0,0.0058],step:75,ystep:0.001,yticks:[],noYaxis:true,xticks:[[450,'450'],[550,'550'],[600,'600'],[800,'800']],fns:[pdf(600,75)],fill:{f:pdf(600,75),a:550,b:800},label:'P(550<X<800)'}),
+  q83:()=>plot({x:[-4.5,5.5],y:[-3.5,2.5],fns:[{f:x=>x+1,a:-4,b:1},{f:x=>2-(x-1)/4,a:1,b:5}],pts:[[-4,-3],[1,2],[5,1]]}),
+  q83s:()=>plot({x:[-4.5,5.5],y:[-3.5,2.5],fns:[{f:x=>x+1,a:-4,b:1},{f:x=>2-(x-1)/4,a:1,b:5}],fill:{f:x=>x<1?x+1:2-(x-1)/4,a:-1,b:5},pts:[[-1,0,'−1'],[1,2],[5,1]]}),
+  e86:()=>plot({x:[-0.5,2.5],y:[-1.5,3.5],step:0.5,ly:1,lx:1,fns:[x=>x*x-1],fill:{f:x=>x*x-1,a:0,b:2}}),
+  e85:()=>plot({x:[-2,3],y:[-1,5],fns:[x=>x*x,{f:x=>x+2,c:'var(--accent)'}],fill:{f:x=>x+2-x*x,a:-1,b:2},pts:[[-1,1],[2,4]]}),
+  q9:()=>plot({x:[0,72],y:[-3,2.2],step:5,ystep:0.5,lx:10,ly:1,fns:[{f:x=>(2*x-30)*Math.exp(-0.1*x),a:1,b:70}],pts:[[25,1.64,'max (25 ; 1,64)'],[15,0,'15']]}),
+  cube:()=>`<svg viewBox="0 0 300 230" role="img" aria-label="cube ABCDEFGH"><rect width="300" height="230" fill="var(--paper)"/>
+    <g fill="none" stroke="var(--ink)" stroke-width="1.6"><path d="M60 190 H190 V60 H60 Z"/><path d="M60 60 L120 20 H250 L190 60"/><path d="M250 20 V150 L190 190"/></g>
+    <g fill="none" stroke="var(--muted)" stroke-dasharray="5 4"><path d="M60 190 L120 150 H250"/><path d="M120 150 V20"/></g>
+    <g font-size="14" fill="var(--ink)" font-family="var(--f-mono)"><text x="44" y="206">A</text><text x="194" y="206">B</text><text x="256" y="156">C</text><text x="106" y="148">D</text><text x="44" y="58">E</text><text x="194" y="56">F</text><text x="256" y="18">G</text><text x="104" y="16">H</text><text x="120" y="54">I</text></g>
+    <circle cx="125" cy="60" r="3.5" fill="var(--accent)"/></svg>`
+};
+
+/* ---------- Contenu ---------- */
+const CH=[
+{id:'c1',code:'5GUAA1',nom:'Statistiques à 2 variables',pts:7,min:25,
+ tombe:'Un tableau ou un graphique de points → calculer r et la droite des moindres carrés, puis estimer une valeur. Parfois : associer nuages et r, corrélation ≠ causalité, droite de Mayer.',
+ recettes:[
+  {t:'Droite des moindres carrés + r (le classique)',q:'« Déterminer le coefficient de corrélation et une droite de régression… estimer… »',s:[
+   R`Lire les données et les mettre en tableau. Si \(x\) = des années, poser \(t = \text{année} - \text{1re année}\) : calculs bien plus simples.`,
+   R`Ajouter les colonnes \(x^2\), \(y^2\), \(xy\) et faire les sommes \(\sum x,\ \sum y,\ \sum x^2,\ \sum y^2,\ \sum xy\).`,
+   R`Moyennes : \(\bar x=\frac{\sum x}{n}\), \(\bar y=\frac{\sum y}{n}\).`,
+   R`Variances (formulaire) : \(\sigma_x^2=\frac{\sum x^2}{n}-\bar x^2\), \(\sigma_y^2=\frac{\sum y^2}{n}-\bar y^2\), puis les racines \(\sigma_x,\ \sigma_y\).`,
+   R`Covariance (formulaire) : \(\text{cov}(x,y)=\frac{\sum xy}{n}-\bar x\,\bar y\).`,
+   R`\(r=\dfrac{\text{cov}(x,y)}{\sigma_x\,\sigma_y}\) + une phrase : « r ≈ 0,99 proche de 1 : très forte corrélation linéaire positive, l'ajustement est pertinent ».`,
+   R`Droite (formulaire) : \(y-\bar y=\dfrac{\text{cov}(x,y)}{\sigma_x^2}(x-\bar x)\), puis isoler \(y\).`,
+   R`Remplacer \(x\) par la valeur demandée → estimation au centième + unité.`]},
+  {t:'Droite de Mayer',q:'« Déterminer une droite de Mayer »',s:[
+   R`Ranger les points par \(x\) croissant et couper en 2 groupes de même taille.`,
+   R`Calculer le point moyen de chaque groupe : \(G_1\) et \(G_2\).`,
+   R`Pente \(m=\frac{y_{G_2}-y_{G_1}}{x_{G_2}-x_{G_1}}\), puis \(y-y_{G_1}=m(x-x_{G_1})\).`,
+   R`Vérifier que le point moyen global \(G(\bar x;\bar y)\) est sur la droite.`]},
+  {t:'Associer nuages et valeurs de r',q:'« Associer chaque nuage à son coefficient »',s:[
+   R`Signe : le nuage monte → \(r>0\) ; il descend → \(r<0\).`,
+   R`Les points sont collés à une droite → \(|r|\) proche de 1. Nuage diffus → \(|r|\) proche de 0.`,
+   R`Justifier chaque choix en une phrase.`]}
+ ],
+ pieges:[R`Oublier de retirer \(\bar x^2\) dans la variance ou \(\bar x\bar y\) dans la covariance.`,R`Confondre \(\sigma\) (écart-type) et \(\sigma^2\) (variance) : la pente utilise \(\sigma_x^2\).`,R`Arrondir trop tôt : garder 4 décimales dans les calculs, le résultat final au centième.`,R`Corrélation ≠ causalité : deux variables peuvent avoir une cause commune.`,R`Ne jamais donner r sans phrase d'interprétation.`],
+ flash:[
+  [R`Formule de la covariance ?`,R`\(\text{cov}(x,y)=\frac{\sum x_iy_i}{n}-\bar x\bar y\) (sur le formulaire)`],
+  [R`Je dois calculer la pente de la droite des moindres carrés →`,R`\(\frac{\text{cov}(x,y)}{\sigma_x^2}\)`],
+  [R`Formule de r ?`,R`\(r=\frac{\text{cov}(x,y)}{\sigma_x\sigma_y}\), toujours entre −1 et 1`],
+  [R`Quel point est toujours sur la droite des moindres carrés (et de Mayer) ?`,R`Le point moyen \(G(\bar x;\bar y)\)`],
+  [R`Principe des moindres carrés ?`,R`La droite qui rend minimale la somme des carrés des écarts verticaux entre les points et la droite`],
+  [R`Je vois des années comme \(x\) →`,R`Je pose \(t=\text{année}-\text{1re année}\) pour simplifier`],
+  [R`r = −0,96 signifie…`,R`Très forte corrélation linéaire négative (quand x augmente, y diminue)`],
+  [R`Corrélation forte ⇒ causalité ?`,R`Non. Exemple : crème solaire et cancer de la peau ont une cause commune (le soleil)`],
+  [R`Interpolation / extrapolation ?`,R`Estimer dans la plage des données / en dehors. L'extrapolation n'est fiable que près des données`]
+ ],
+ ex:[
+  {id:'e11',src:'Examen jury mars 2024',pts:7,t:'Salaire minimum horaire',fig:'q1',
+   e:R`Le graphique donne le salaire minimum horaire brut (€) de 2014 à 2019 (2018 manque). Déterminer le coefficient de corrélation et une droite de régression par la méthode des moindres carrés afin d'estimer le montant horaire en 2018. Noter tous les calculs.`,
+   s:[[1,R`Lecture : 2014 → 8,1 ; 2015 → 8,3 ; 2016 → 8,5 ; 2017 → 8,7 ; 2019 → 8,9. On pose \(t=\text{année}-2014\) : \(t\) = 0, 1, 2, 3, 5 ; \(n=5\).`],
+      [2,R`\(\sum t=11\), \(\sum y=42{,}5\), \(\sum t^2=39\), \(\sum y^2=361{,}65\), \(\sum ty=95{,}9\).`],
+      [3,R`\(\bar t=\frac{11}{5}=2{,}2\) ; \(\bar y=\frac{42{,}5}{5}=8{,}5\).`],
+      [4,R`\(\sigma_t^2=\frac{39}{5}-2{,}2^2=7{,}8-4{,}84=2{,}96\Rightarrow\sigma_t\approx1{,}7205\) ; \(\sigma_y^2=\frac{361{,}65}{5}-8{,}5^2=72{,}33-72{,}25=0{,}08\Rightarrow\sigma_y\approx0{,}2828\).`],
+      [5,R`\(\text{cov}=\frac{95{,}9}{5}-2{,}2\cdot8{,}5=19{,}18-18{,}7=0{,}48\).`],
+      [6,R`\(r=\frac{0{,}48}{1{,}7205\cdot0{,}2828}\approx0{,}99\) : très forte corrélation linéaire positive, l'ajustement linéaire est pertinent.`],
+      [7,R`\(y-8{,}5=\frac{0{,}48}{2{,}96}(t-2{,}2)\iff y\approx0{,}1622\,t+8{,}1432\).`],
+      [8,R`2018 → \(t=4\) : \(y\approx0{,}1622\cdot4+8{,}1432\approx8{,}79\).`]],
+   r:R`\(r\approx0{,}99\) ; \(y\approx0{,}16\,t+8{,}14\) avec \(t=\text{année}-2014\) ; estimation 2018 : <b>8,79 €/h</b>.`,figR:'q1s'},
+  {id:'e12',src:'Entraînement',pts:4,t:'Droite de Mayer',
+   e:R`\(x\) : 1, 2, 3, 4, 5, 6 et \(y\) : 3, 5, 4, 7, 8, 9. Déterminer la droite de Mayer et vérifier qu'elle passe par le point moyen.`,
+   s:[[1,R`Groupe 1 : \(x\) = 1, 2, 3 ; groupe 2 : \(x\) = 4, 5, 6.`],[2,R`\(G_1\left(\frac{1+2+3}{3};\frac{3+5+4}{3}\right)=(2;4)\) ; \(G_2\left(5;\frac{7+8+9}{3}\right)=(5;8)\).`],[3,R`\(m=\frac{8-4}{5-2}=\frac43\) ; \(y-4=\frac43(x-2)\iff y=\frac43x+\frac43\).`],[4,R`\(G(3{,}5;6)\) : \(\frac43\cdot3{,}5+\frac43=\frac{14}3+\frac43=6\). ✓`]],
+   r:R`<b>\(y=\frac43x+\frac43\)</b>, qui passe bien par \(G(3{,}5;6)\).`},
+  {id:'e13',src:'Entraînement',pts:3,t:'Nuages et coefficients',figs:['cA','cB','cC','cD'],
+   e:R`Associer chaque nuage à un coefficient : −0,99 ; 0,21 ; 0,80 ; 1,00 (arrondi). Justifier.`,
+   s:[[1,R`B descend : seul coefficient négatif → B : −0,99.`],[2,R`A monte et ses points sont pratiquement alignés → A : 1,00.`],[3,R`C monte mais les points s'écartent de la droite → C : 0,80. D n'a pas de tendance nette → D : 0,21.`]],
+   r:R`<b>A : 1,00 · B : −0,99 · C : 0,80 · D : 0,21</b>`},
+  {id:'e14',src:'Entraînement',pts:2,t:'Corrélation ou causalité ?',
+   e:R`Dans une ville, on observe que plus il y a de pompiers sur un incendie, plus les dégâts sont importants (r = 0,85). Faut-il envoyer moins de pompiers ? Expliquer.`,
+   s:[[1,R`La corrélation est forte, mais ce n'est pas un lien de cause à effet.`],[2,R`Cause commune : la taille de l'incendie. Un grand incendie provoque à la fois plus de dégâts et l'envoi de plus de pompiers.`]],
+   r:R`<b>Non</b> : corrélation ≠ causalité, la cause commune est la gravité de l'incendie.`},
+  {id:'e15',src:'Entraînement',pts:7,t:'Heures d\'étude et note',
+   e:R`Heures d'étude \(x\) : 2, 4, 5, 7, 8 ; note sur 20 \(y\) : 9, 11, 12, 15, 16. Calculer r, la droite des moindres carrés et estimer la note pour 6 h d'étude.`,
+   s:[[2,R`\(\sum x=26,\ \sum y=63,\ \sum x^2=158,\ \sum y^2=827,\ \sum xy=355\).`],[3,R`\(\bar x=5{,}2\) ; \(\bar y=12{,}6\).`],[4,R`\(\sigma_x^2=31{,}6-27{,}04=4{,}56\ (\sigma_x\approx2{,}1354)\) ; \(\sigma_y^2=165{,}4-158{,}76=6{,}64\ (\sigma_y\approx2{,}5768)\).`],[5,R`\(\text{cov}=71-65{,}52=5{,}48\).`],[6,R`\(r=\frac{5{,}48}{2{,}1354\cdot2{,}5768}\approx1{,}00\) (0,996) : très forte corrélation positive.`],[7,R`\(y-12{,}6=\frac{5{,}48}{4{,}56}(x-5{,}2)\iff y\approx1{,}20x+6{,}35\).`],[8,R`\(x=6\) : \(y\approx13{,}56\).`]],
+   r:R`\(r\approx0{,}996\) ; \(y\approx1{,}20x+6{,}35\) ; 6 h → <b>≈ 13,56/20</b>.`}
+ ]},
+
+{id:'c2',code:'5GUAA2',nom:'Suites et maths financières',pts:10,min:40,
+ tombe:'Intérêts composés (taux équivalents, valeur acquise, intérêts), durée avec le logarithme, suite géométrique dans un contexte (baisse de x % par an). Aussi : terme général, somme, emprunt, constitution d\'un capital.',
+ recettes:[
+  {t:'Reconnaître la suite',q:'Toute question de suite',s:[
+   R`Ajout d'une même quantité à chaque étape → <b>arithmétique</b>, raison \(r\) : \(u_n=u_1+(n-1)r\) (ou \(u_0+nr\)).`,
+   R`Multiplication par un même nombre → <b>géométrique</b>, raison \(q\) : \(u_n=u_1q^{n-1}\) (ou \(u_0q^n\)). Hausse de 3 % → \(q=1{,}03\) ; baisse de 4 % → \(q=0{,}96\).`,
+   R`Avec deux termes connus : arithmétique \(u_p-u_k=(p-k)r\) ; géométrique \(\frac{u_p}{u_k}=q^{p-k}\).`]},
+  {t:'Somme de termes consécutifs',q:'« Calculer la somme… », « total… »',s:[
+   R`Compter les termes : de \(u_3\) à \(u_8\), il y a \(8-3+1=6\) termes.`,
+   R`Arithmétique : \(S=\text{nb termes}\cdot\frac{\text{premier}+\text{dernier}}2\).`,
+   R`Géométrique : \(S=\text{premier}\cdot\frac{1-q^{\text{nb termes}}}{1-q}\).`,
+   R`Si \(|q|<1\) et une infinité de termes : \(S=\frac{\text{premier}}{1-q}\).`]},
+  {t:'Trouver « quand ? » (durée, année)',q:'« En quelle année… », « après combien… »',s:[
+   R`Écrire l'inéquation : \(u_0\,q^n<\text{seuil}\) (ou \(>\)).`,
+   R`Isoler \(q^n\), puis passer au ln : \(n\ln q<\ln(\ldots)\).`,
+   R`Diviser par \(\ln q\). <b>Si \(q<1\), \(\ln q<0\) : le sens de l'inégalité change.</b>`,
+   R`Arrondir \(n\) à l'entier supérieur, puis traduire en année (\(u_0\) = année de départ).`,
+   R`Vérifier avec \(u_{n-1}\) et \(u_n\).`]},
+  {t:'Intérêts composés et taux équivalents',q:'« taux mensuel/journalier équivalent », « valeur acquise »',s:[
+   R`Taux en décimal : 1,5 % → \(i=0{,}015\).`,
+   R`Équivalence (formulaire) : \((1+i_a)=(1+i_m)^{12}=(1+i_j)^{365}\) → \(i_m=(1+i_a)^{1/12}-1\).`,
+   R`Valeur acquise : \(C_n=C_0(1+i)^n\), avec \(n\) dans la même unité que \(i\).`,
+   R`Intérêts = \(C_n-C_0\). Garder le taux exact dans la calculatrice (pas d'arrondi intermédiaire).`]},
+  {t:'Emprunt et constitution de capital',q:'« mensualité », « versements réguliers »',s:[
+   R`Passer au taux de la période des versements (souvent mensuel équivalent).`,
+   R`Emprunt (formulaire) : \(a=C\cdot\frac{i(1+i)^n}{(1+i)^n-1}\).`,
+   R`Capital constitué (formulaire) : \(V_n=a\cdot\frac{(1+i)^n-1}{i}\).`,
+   R`Coût du crédit = \(n\cdot a-C\).`]}
+ ],
+ pieges:[R`Le taux mensuel équivalent n'est <b>pas</b> le taux annuel ÷ 12.`,R`Inégalité avec \(\ln q\) et \(q<1\) : on change le sens.`,R`Compter les termes : du rang 3 au rang 8, c'est 6 termes, pas 5.`,R`Intérêts simples \(C_0(1+in)\) ≠ intérêts composés \(C_0(1+i)^n\).`,R`L'examen impose souvent « utiliser les formules des suites » : écrire \(u_n=\ldots\).`],
+ flash:[
+  [R`Je vois « baisse de 4 % par an » →`,R`Suite géométrique de raison \(q=0{,}96\)`],
+  [R`Terme général d'une suite géométrique ?`,R`\(u_n=u_0q^n\) (ou \(u_1q^{n-1}\))`],
+  [R`Somme de n termes d'une suite arithmétique ?`,R`\(n\cdot\frac{\text{premier}+\text{dernier}}{2}\)`],
+  [R`Somme de n termes d'une suite géométrique ?`,R`\(\text{premier}\cdot\frac{1-q^n}{1-q}\)`],
+  [R`Taux mensuel équivalent à un taux annuel \(i\) ?`,R`\(i_m=(1+i)^{1/12}-1\)`],
+  [R`Je cherche « en quelle année » avec \(q^n\) →`,R`ln des deux côtés ; si \(q<1\), changer le sens ; arrondir \(n\) au-dessus`],
+  [R`Une suite géométrique converge quand ?`,R`Quand \(|q|<1\) (vers 0). Somme infinie : \(\frac{\text{premier}}{1-q}\)`],
+  [R`Croissance d'une suite arithmétique / géométrique ?`,R`Linéaire / exponentielle`],
+  [R`Durée d'un placement : \(C_0(1+i)^n=C_n\) →`,R`\(n=\frac{\ln(C_n/C_0)}{\ln(1+i)}\)`]
+ ],
+ ex:[
+  {id:'e21',src:'Examen jury mars 2024',pts:6,t:'Placement de 21 000 €',
+   e:R`Un investisseur place 21 000 € à intérêts composés au taux annuel de 1,5 %. 1) Calculer le taux journalier équivalent. 2) Calculer la valeur acquise après 2 500 jours. 3) Calculer l'intérêt total produit.`,
+   s:[[4,R`\((1+i_j)^{365}=1{,}015\Rightarrow i_j=1{,}015^{1/365}-1\approx0{,}0000408\), soit 0,00408 % par jour.`],[4,R`\(C=21000\,(1+i_j)^{2500}=21000\cdot1{,}015^{2500/365}\approx23\,254{,}51\) €.`],[4,R`Intérêt \(=23\,254{,}51-21\,000=2\,254{,}51\) €.`]],
+   r:R`\(i_j\approx0{,}0000408\) ; <b>23 254,51 €</b> ; intérêt <b>2 254,51 €</b>.`},
+  {id:'e22',src:'Examen jury mars 2024',pts:4,t:'Faillite de l\'usine',
+   e:R`Chaque année, la production d'une usine baisse de 4 %. En 2023, elle était de 45 000 unités. Sous 10 000 unités, la société est déclarée en faillite. Quand ? (utiliser les formules des suites)`,
+   s:[[1,R`Suite géométrique : \(u_n=45000\cdot0{,}96^n\), où \(n\) = nombre d'années après 2023.`],[1,R`\(u_n<10000\iff0{,}96^n<\frac{10000}{45000}=\frac29\).`],[2,R`\(n\ln0{,}96<\ln\frac29\). Comme \(\ln0{,}96<0\) : \(n>\frac{\ln(2/9)}{\ln0{,}96}\approx36{,}84\).`],[3,R`\(n=37\) → année \(2023+37=2060\).`],[4,R`Vérification : \(u_{36}\approx10\,350{,}87\) et \(u_{37}\approx9\,936{,}84<10\,000\).`]],
+   r:R`Faillite en <b>2060</b>.`},
+  {id:'e23',src:'Entraînement',pts:4,t:'Arithmétique : deux termes connus',
+   e:R`Suite arithmétique avec \(u_3=11\) et \(u_{10}=32\). Trouver \(u_n\), puis \(u_1+u_2+\dots+u_{20}\).`,
+   s:[[1,R`\(u_{10}-u_3=7r=21\Rightarrow r=3\) ; \(u_1=u_3-2r=5\).`],[1,R`\(u_n=5+3(n-1)=3n+2\).`],[2,R`\(u_{20}=62\) ; \(S=20\cdot\frac{5+62}{2}=670\).`]],
+   r:R`<b>\(u_n=3n+2\)</b> ; somme <b>670</b>.`},
+  {id:'e24',src:'Entraînement',pts:4,t:'Géométrique : somme partielle',
+   e:R`Suite géométrique avec \(u_2=12\) et \(u_5=96\). Trouver la raison, \(u_1\), puis \(u_3+\dots+u_8\).`,
+   s:[[1,R`\(\frac{u_5}{u_2}=q^3=8\Rightarrow q=2\) ; \(u_1=\frac{12}{2}=6\).`],[2,R`De \(u_3\) à \(u_8\) : 6 termes, premier \(u_3=24\).`],[2,R`\(S=24\cdot\frac{1-2^6}{1-2}=24\cdot63=1512\).`]],
+   r:R`\(q=2\), \(u_1=6\), somme <b>1 512</b>.`},
+  {id:'e25',src:'Entraînement',pts:5,t:'Prêt voiture',
+   e:R`On emprunte 15 000 € au taux annuel de 4 %, remboursés par mensualités constantes pendant 5 ans. Calculer la mensualité et le coût du crédit.`,
+   s:[[1,R`\(i_m=1{,}04^{1/12}-1\approx0{,}0032737\) ; \(n=60\) mois.`],[2,R`\(a=15000\cdot\frac{i_m(1+i_m)^{60}}{(1+i_m)^{60}-1}\approx275{,}76\) €.`],[4,R`Coût \(=60\cdot275{,}76-15000\approx1\,545{,}84\) €.`]],
+   r:R`Mensualité <b>275,76 €</b> ; coût du crédit <b>≈ 1 545,84 €</b>.`},
+  {id:'e26',src:'Entraînement',pts:4,t:'Épargne mensuelle',
+   e:R`On verse 100 € chaque mois pendant 10 ans sur un compte à 2 % par an (intérêts composés). Valeur acquise au dernier versement ?`,
+   s:[[1,R`\(i_m=1{,}02^{1/12}-1\approx0{,}0016516\) ; \(n=120\).`],[3,R`\(V=100\cdot\frac{(1+i_m)^{120}-1}{i_m}\approx13\,259{,}68\) €.`]],
+   r:R`<b>≈ 13 259,68 €</b> (pour 12 000 € versés).`},
+  {id:'e27',src:'Entraînement',pts:3,t:'La balle qui rebondit',
+   e:R`On lâche une balle de 2 m. À chaque rebond, elle remonte aux 3/4 de la hauteur précédente. Distance totale parcourue jusqu'à l'arrêt ?`,
+   s:[[1,R`Hauteurs des rebonds : 1,5 ; 1,125 ; … géométrique, \(q=0{,}75\).`],[4,R`Chaque rebond est monté puis descendu : \(2+2\cdot\frac{1{,}5}{1-0{,}75}=2+2\cdot6=14\) m.`]],
+   r:R`<b>14 m</b>.`}
+ ]},
+
+{id:'c3',code:'5GUAA3',nom:'Asymptotes et limites',pts:11,min:40,
+ tombe:'Trouver des paramètres pour imposer des asymptotes (justifier par des limites), lire domaine et limites sur un graphique, calculer des limites de fonctions rationnelles (levée d\'indétermination).',
+ recettes:[
+  {t:'Étude asymptotique d\'une fonction rationnelle',q:'« Rechercher les asymptotes », « limites qui informent sur le graphique »',s:[
+   R`Domaine : retirer les zéros du dénominateur.`,
+   R`Pour chaque zéro \(a\) du dénominateur : calculer le numérateur en \(a\). S'il est ≠ 0 → \(\frac{k}{0}\) → <b>AV \(x=a\)</b>. Signe à gauche et à droite → \(\pm\infty\).`,
+   R`Si le numérateur vaut aussi 0 en \(a\) → \(\frac00\) → factoriser par \((x-a)\), simplifier, recalculer : limite finie = « trou », pas d'AV.`,
+   R`En \(\pm\infty\) : garder les termes de plus haut degré. deg N < deg D → AH \(y=0\) ; deg N = deg D → AH \(y=\frac{\text{coef. dom. N}}{\text{coef. dom. D}}\) ; deg N = deg D + 1 → AO par division euclidienne.`,
+   R`AO : \(f(x)=mx+p+\frac{\text{reste}}{D(x)}\) → AO \(y=mx+p\). Position : signe de \(\frac{\text{reste}}{D(x)}\).`,
+   R`Rédiger chaque asymptote avec sa limite : « \(\lim_{x\to2}f(x)=\infty\) donc AV \(x=2\) ».`]},
+  {t:'Trouver des paramètres (a, b…)',q:'« Déterminer a et b pour que f admette des asymptotes en… »',s:[
+   R`AV \(x=c\) → le dénominateur s'annule en \(c\) : une équation.`,
+   R`AH \(y=k\) → quotient des coefficients dominants \(=k\) : une deuxième équation.`,
+   R`Résoudre, puis vérifier que le numérateur ne s'annule pas en \(c\) (sinon pas d'AV).`,
+   R`Justifier avec les limites (\(x\to c\) et \(x\to\pm\infty\)).`]},
+  {t:'Lire un graphique',q:'« Compléter : dom f = …, lim … = … »',s:[
+   R`Droite verticale en pointillé \(x=a\) → \(a\notin\) dom ; à droite et à gauche, la courbe file vers \(+\infty\) ou \(-\infty\).`,
+   R`Droite horizontale \(y=b\) approchée aux extrémités → \(\lim_{\pm\infty}f=b\).`,
+   R`En un point où la courbe est continue → la limite est l'image \(f(a)\) lue sur le graphique.`]}
+ ],
+ pieges:[R`\(\frac{k}{0}\) n'est pas \(\frac00\) : seul \(\frac00\) se lève en factorisant.`,R`Oublier les limites à gauche ET à droite de l'AV (signes différents).`,R`deg N = deg D + 1 : pas d'AH mais une AO.`,R`Un paramètre qui fait aussi s'annuler le numérateur détruit l'AV : toujours vérifier.`,R`\(\lim_{x\to0}\frac{\sin x}{x}=1\) est au programme.`],
+ flash:[
+  [R`Je vois \(\frac{k}{0}\) avec \(k\neq0\) →`,R`Limite infinie : AV. Tableau de signe à gauche/droite pour \(\pm\infty\)`],
+  [R`Je vois \(\frac00\) →`,R`Factoriser numérateur et dénominateur par \((x-a)\), simplifier, recalculer`],
+  [R`Limite en \(\pm\infty\) d'une fraction rationnelle →`,R`Garder les termes de plus haut degré en haut et en bas`],
+  [R`deg N = deg D →`,R`AH \(y=\) quotient des coefficients dominants`],
+  [R`deg N < deg D →`,R`AH \(y=0\)`],
+  [R`deg N = deg D + 1 →`,R`AO : division euclidienne, \(y=\) quotient`],
+  [R`Position courbe / asymptote ?`,R`Signe de \(f(x)-(mx+p)\) : > 0 au-dessus, < 0 en dessous`],
+  [R`\(\lim_{x\to0}\frac{\sin x}{x}\) ?`,R`1`],
+  [R`Les 4 indéterminations ?`,R`\(\frac00,\ \frac\infty\infty,\ \infty-\infty,\ 0\cdot\infty\)`]
+ ],
+ ex:[
+  {id:'e31',src:'Examen jury mars 2024',pts:5,t:'Trouver a et b',
+   e:R`Déterminer les réels \(a\) et \(b\) pour que \(f(x)=\dfrac{ax+2}{bx-10}\) admette des asymptotes \(y=-3\) et \(x=2\) (justifier avec des limites).`,
+   s:[[1,R`AV \(x=2\) : le dénominateur s'annule en 2 → \(2b-10=0\Rightarrow b=5\).`],[2,R`AH : \(\lim_{x\to\pm\infty}\frac{ax+2}{5x-10}=\frac a5=-3\Rightarrow a=-15\).`],[3,R`Vérification : numérateur en 2 : \(-30+2=-28\neq0\), l'AV existe bien.`],[4,R`\(\lim_{x\to2}f(x)=\frac{-28}{0}=\infty\) → AV \(x=2\) ; \(\lim_{x\to\pm\infty}f(x)=\frac{-15}{5}=-3\) → AH \(y=-3\).`]],
+   r:R`<b>\(a=-15\), \(b=5\)</b>.`},
+  {id:'e32',src:'Examen jury mars 2024',pts:6,t:'Lecture graphique',fig:'q32',
+   e:R`Compléter à partir du graphique : dom f ; \(\lim_{+\infty}f\) ; \(\lim_{-\infty}f\) ; \(\lim_{x\to-0{,}5^+}f\) ; \(\lim_{x\to-0{,}5^-}f\) ; \(\lim_{x\to4}f\).`,
+   s:[[3,R`AV en pointillé \(x=-0{,}5\) → dom \(f=\mathbb R\setminus\{-0{,}5\}\).`],[3,R`AH \(y=0{,}5\) des deux côtés → \(\lim_{\pm\infty}f=0{,}5\).`],[3,R`À droite de \(-0{,}5\), la courbe monte vers \(+\infty\) ; à gauche, elle descend vers \(-\infty\).`],[3,R`En 4, la courbe est continue : la limite est l'image, lue \(\approx0{,}9\) (exactement \(\frac89\) pour \(f(x)=\frac{x+4}{2x+1}\)).`]],
+   r:R`dom \(=\mathbb R\setminus\{-0{,}5\}\) ; \(0{,}5\) ; \(0{,}5\) ; \(+\infty\) ; \(-\infty\) ; <b>≈ 0,9</b>.`},
+  {id:'e33',src:'Entraînement',pts:3,t:'Un faux AV',
+   e:R`\(f(x)=\dfrac{x^2-4}{x-2}\). Calculer \(\lim_{x\to2}f(x)\). Y a-t-il une AV ?`,
+   s:[[3,R`En 2 : \(\frac{0}{0}\), indétermination.`],[3,R`\(\frac{(x-2)(x+2)}{x-2}=x+2\) pour \(x\neq2\) → limite \(=4\).`]],
+   r:R`<b>Limite 4</b> : pas d'AV, un « trou » au point (2 ; 4).`},
+  {id:'e34',src:'Entraînement',pts:5,t:'Asymptote oblique',
+   e:R`\(f(x)=\dfrac{2x^2+3x-1}{x+1}\). Asymptotes et position de la courbe par rapport à l'AO.`,
+   s:[[2,R`Numérateur en \(-1\) : \(2-3-1=-2\neq0\) → AV \(x=-1\). \(x\to-1^+\) : \(\frac{-2}{0^+}=-\infty\) ; \(x\to-1^-\) : \(+\infty\).`],[4,R`deg 2 = deg 1 + 1 → division : \(2x^2+3x-1=(x+1)(2x+1)-2\Rightarrow f(x)=2x+1-\frac{2}{x+1}\).`],[5,R`AO \(y=2x+1\) car \(\frac{-2}{x+1}\to0\). Si \(x>-1\) : \(-\frac{2}{x+1}<0\) → courbe sous l'AO ; si \(x<-1\) : au-dessus.`]],
+   r:R`<b>AV \(x=-1\), AO \(y=2x+1\)</b>, courbe en dessous pour \(x>-1\), au-dessus pour \(x<-1\).`},
+  {id:'e35',src:'Entraînement',pts:4,t:'Deux AV',
+   e:R`\(f(x)=\dfrac{3x-1}{x^2-1}\). Domaine, asymptotes et limites à gauche/droite.`,
+   s:[[1,R`dom \(=\mathbb R\setminus\{-1;1\}\).`],[2,R`En 1 : numérateur 2 > 0 ; \(x^2-1\to0^+\) si \(x\to1^+\) → \(+\infty\) ; \(x\to1^-\) → \(-\infty\).`],[2,R`En −1 : numérateur −4 ; \(x\to-1^+\) : \(x^2-1\to0^-\) → \(+\infty\) ; \(x\to-1^-\) : \(0^+\) → \(-\infty\).`],[4,R`deg 1 < deg 2 → AH \(y=0\).`]],
+   r:R`<b>AV \(x=1\) et \(x=-1\), AH \(y=0\)</b>.`},
+  {id:'e36',src:'Entraînement',pts:3,t:'Calculs de limites',
+   e:R`a) \(\lim_{x\to+\infty}\frac{x^3-2x}{4x^3+5}\) b) \(\lim_{x\to-\infty}\frac{x^2+1}{x-3}\) c) \(\lim_{x\to3}\frac{x^2-9}{x^2-x-6}\)`,
+   s:[[4,R`a) \(\frac{x^3}{4x^3}=\frac14\).`],[4,R`b) \(\frac{x^2}{x}=x\to-\infty\).`],[3,R`c) \(\frac00\) : \(\frac{(x-3)(x+3)}{(x-3)(x+2)}=\frac{x+3}{x+2}\to\frac65\).`]],
+   r:R`<b>\(\frac14\) ; \(-\infty\) ; \(\frac65\)</b>`},
+  {id:'e37',src:'Entraînement',pts:3,t:'Construire une fonction',
+   e:R`Trouver \(f(x)=\frac{ax+b}{x+c}\) avec une AV \(x=-2\), une AH \(y=3\) et un graphe passant par l'origine.`,
+   s:[[1,R`AV \(x=-2\) → \(c=2\).`],[2,R`AH → \(a=3\).`],[3,R`\(f(0)=\frac b2=0\Rightarrow b=0\). Vérif : numérateur en −2 : \(-6\neq0\).`]],
+   r:R`<b>\(f(x)=\frac{3x}{x+2}\)</b>`}
+ ]},
+
+{id:'c4',code:'5GUAA4',nom:'Dérivées',pts:10,min:40,
+ tombe:'À partir d\'un graphique : tableau de variations, signe de f\', reconnaître le graphe de f\'. Tangentes parallèles à une droite ou horizontales. Aussi : calcul de dérivées, équation de tangente, optimisation.',
+ recettes:[
+  {t:'Du graphique de f au signe de f\'',q:'« tableau de variations », « signes de f\' », « quel graphique est f\' ? »',s:[
+   R`Repérer sur f les abscisses des sommets (max/min) : ce sont les zéros de f'.`,
+   R`f monte → f' > 0 ; f descend → f' < 0.`,
+   R`Le bon graphe de f' : il coupe l'axe des x aux sommets de f et il est au-dessus de l'axe là où f monte.`,
+   R`Justifier : « f' s'annule en 1 et 3 (extremums de f) et est positive sur ]1;3[ où f croît ».`]},
+  {t:'Tangente parallèle / horizontale',q:'« tangentes parallèles à l\'axe x / à la droite y = mx + p »',s:[
+   R`Calculer \(f'(x)\).`,
+   R`Horizontale : \(f'(x)=0\). Parallèle à \(y=mx+p\) : \(f'(x)=m\).`,
+   R`Résoudre (souvent 2e degré : \(\Delta\)). Δ < 0 → aucune tangente ; sinon donner les abscisses.`,
+   R`Donner les points \((x;f(x))\), et si demandé l'équation \(y=f(a)+f'(a)(x-a)\).`]},
+  {t:'Équation de la tangente en a',q:'« Déterminer l\'équation de la tangente au point d\'abscisse a »',s:[
+   R`Calculer \(f(a)\).`,R`Calculer \(f'(a)\) (= la pente).`,R`\(y=f(a)+f'(a)(x-a)\), puis développer.`]},
+  {t:'Étude complète (variations, extremums, concavité)',q:'« Dresser le tableau de variation »',s:[
+   R`Domaine.`,R`\(f'(x)\), la factoriser, tableau de signes → croissance, extremums (zéro de f' <b>avec</b> changement de signe).`,R`\(f''(x)\) → signe : \(f''>0\) ∪ (concave vers le haut), \(f''<0\) ∩ ; changement de signe = point d'inflexion.`,R`Calculer les images des points remarquables et tout regrouper dans un tableau.`]},
+  {t:'Optimisation',q:'« Pour quelle valeur… maximal / minimal ? »',s:[
+   R`Nommer l'inconnue \(x\) (avec unité) et son domaine.`,R`Écrire la grandeur à optimiser en fonction de \(x\) seule (utiliser la contrainte).`,R`Dériver, résoudre \(f'(x)=0\), tableau de signes.`,R`Conclure par une phrase avec les unités.`]}
+ ],
+ pieges:[R`f'(a) = 0 ne suffit pas pour un extremum : il faut un changement de signe.`,R`Quotient : \(\frac{u'v-uv'}{v^2}\), attention au signe moins.`,R`Composée : ne pas oublier de multiplier par la dérivée de l'intérieur.`,R`Domaine de l'optimisation : exclure les valeurs absurdes.`],
+ flash:[
+  [R`\((x^n)'\) ?`,R`\(nx^{n-1}\)`],[R`\(\left(\frac uv\right)'\) ?`,R`\(\frac{u'v-uv'}{v^2}\)`],[R`\((uv)'\) ?`,R`\(u'v+uv'\)`],
+  [R`\((\sqrt u)'\) ?`,R`\(\frac{u'}{2\sqrt u}\)`],[R`\((u^n)'\) ?`,R`\(n\,u^{n-1}\,u'\)`],[R`\((\sin x)'\) et \((\cos x)'\) ?`,R`\(\cos x\) et \(-\sin x\)`],
+  [R`Équation de la tangente en \(a\) ?`,R`\(y=f(a)+f'(a)(x-a)\)`],
+  [R`Je vois « tangente parallèle à \(y=3x-2\) » →`,R`Je résous \(f'(x)=3\)`],
+  [R`Je vois « tangente horizontale » →`,R`Je résous \(f'(x)=0\)`],
+  [R`Sur le graphe de f, un sommet en x = 1 →`,R`f'(1) = 0 : le graphe de f' coupe l'axe des x en 1`],
+  [R`\(f''>0\) signifie…`,R`Concavité vers le haut (∪). Inflexion = changement de signe de f''`]
+ ],
+ ex:[
+  {id:'e41',src:'Examen jury mars 2024',pts:6,t:'Du graphe de f à f\'',fig:'q41',figs:['g1','g2','g3'],
+   e:R`f est représentée ci-dessus. 1) Tableau de variations de f. 2) Tableau de signes de f'. 3) Lequel des trois graphiques peut représenter f' ? Justifier.`,
+   s:[[1,R`Sommets : minimum en (1 ; −1), maximum en (3 ; 0).`],[2,R`f décroît sur ]−∞ ; 1], croît sur [1 ; 3], décroît sur [3 ; +∞[.`],[2,R`f' : − sur ]−∞;1[, 0 en 1, + sur ]1;3[, 0 en 3, − sur ]3;+∞[.`],[3,R`Graphique 1 s'annule en 0 (pas en 1) ; graphique 3 est négatif entre 1 et 3. Seul le graphique 2 s'annule en 1 et 3, est positif entre les deux et négatif ailleurs.`]],
+   r:R`<b>Graphique 2</b>.`},
+  {id:'e42',src:'Examen jury mars 2024',pts:4,t:'Tangentes parallèles',
+   e:R`\(f(x)=x^3+x^2+3x-5\). a) La courbe admet-elle des tangentes parallèles à l'axe des abscisses ? b) Parallèles à la droite \(y=3x-2\) ?`,
+   s:[[1,R`\(f'(x)=3x^2+2x+3\).`],[3,R`a) \(3x^2+2x+3=0\) : \(\Delta=4-36=-32<0\) → aucune solution → <b>aucune</b> tangente horizontale.`],[3,R`b) \(3x^2+2x+3=3\iff x(3x+2)=0\iff x=0\) ou \(x=-\frac23\).`],[4,R`Points : \((0;-5)\) et \(\left(-\frac23;-\frac{185}{27}\right)\approx(-0{,}67;-6{,}85)\).`]],
+   r:R`a) <b>Non</b> (Δ < 0). b) <b>Oui, deux</b> : en \(x=0\) et \(x=-\frac23\).`},
+  {id:'e43',src:'Entraînement',pts:4,t:'Dérivées en série',
+   e:R`Dériver : a) \(3x^4-2x^2+7\) b) \(\frac{2x+1}{x-3}\) c) \(\sqrt{x^2+5}\) d) \((x^2+1)^3\)`,
+   s:[[0,R`a) \(12x^3-4x\)`],[0,R`b) \(\frac{2(x-3)-(2x+1)}{(x-3)^2}=\frac{-7}{(x-3)^2}\)`],[0,R`c) \(\frac{2x}{2\sqrt{x^2+5}}=\frac{x}{\sqrt{x^2+5}}\)`],[0,R`d) \(3(x^2+1)^2\cdot2x=6x(x^2+1)^2\)`]],
+   r:R`Voir étapes.`},
+  {id:'e44',src:'Entraînement',pts:3,t:'Tangente en un point',
+   e:R`\(f(x)=x^2-3x+1\). Équation de la tangente au point d'abscisse 2.`,
+   s:[[1,R`\(f(2)=4-6+1=-1\).`],[2,R`\(f'(x)=2x-3\Rightarrow f'(2)=1\).`],[3,R`\(y=-1+1(x-2)=x-3\).`]],
+   r:R`<b>\(y=x-3\)</b>`},
+  {id:'e45',src:'Entraînement',pts:5,t:'Étude complète',
+   e:R`\(f(x)=x^3-3x^2+2\) : variations, extremums, point d'inflexion.`,
+   s:[[2,R`\(f'(x)=3x^2-6x=3x(x-2)\) : + avant 0, − entre 0 et 2, + après 2.`],[2,R`Max en \((0;2)\), min en \((2;-2)\).`],[3,R`\(f''(x)=6x-6\), change de signe en 1 → inflexion en \((1;0)\).`]],
+   r:R`Max <b>(0 ; 2)</b>, min <b>(2 ; −2)</b>, inflexion <b>(1 ; 0)</b>.`},
+  {id:'e46',src:'Entraînement',pts:5,t:'La boîte en carton',
+   e:R`Dans un carré de carton de 30 cm de côté, on découpe un carré de côté \(x\) à chaque coin pour former une boîte sans couvercle. Quel \(x\) donne le volume maximal ?`,
+   s:[[1,R`\(x\) en cm, \(0<x<15\).`],[2,R`\(V(x)=x(30-2x)^2\).`],[3,R`\(V'(x)=(30-2x)^2-4x(30-2x)=(30-2x)(30-6x)\) → zéro en \(x=5\) (15 exclu). V' > 0 avant 5, < 0 après.`],[4,R`\(V(5)=5\cdot20^2=2000\) cm³.`]],
+   r:R`<b>x = 5 cm</b>, volume max <b>2 000 cm³</b>.`},
+  {id:'e47',src:'Entraînement',pts:4,t:'Coût moyen minimal',
+   e:R`Le coût moyen d'un article est \(C(x)=x+\frac{400}{x}\) (\(x>0\), en centaines d'articles). Pour quelle production est-il minimal ?`,
+   s:[[3,R`\(C'(x)=1-\frac{400}{x^2}=0\iff x^2=400\iff x=20\) (x > 0).`],[3,R`C' < 0 avant 20, > 0 après → minimum.`],[4,R`\(C(20)=20+20=40\).`]],
+   r:R`<b>x = 20</b> (2 000 articles), coût moyen minimal <b>40</b>.`}
+ ]},
+
+{id:'c5',code:'5GUAA5',nom:'Fonctions trigonométriques',pts:7,min:30,
+ tombe:R`Une fonction \(a\sin(bx+c)\) : période, amplitude, extremums (coordonnées), tracer sur deux périodes. Aussi : équations trigonométriques, radians, arcs et secteurs, problème (marées…).`,
+ recettes:[
+  {t:'Analyser f(x) = a·sin(bx + c) + d',q:'« période », « extremums », « représenter »',s:[
+   R`Amplitude \(|a|\) ; période \(T=\frac{2\pi}{|b|}\) ; ligne médiane \(y=d\) ; max \(d+|a|\), min \(d-|a|\).`,
+   R`Maximum (a > 0) : \(bx+c=\frac\pi2+2k\pi\). Minimum : \(bx+c=-\frac\pi2+2k\pi\) (ou \(\frac{3\pi}2\)). Isoler \(x\).`,
+   R`Deux extremums consécutifs du même type sont séparés d'une période.`,
+   R`Pour tracer : graduer l'axe des x en \(\frac T4\) ; points clés : 0, max, 0, min, 0 à chaque quart de période (en partant de \(x=-\frac cb\)).`,
+   R`Déphasage : \(-\frac cb\) (décalage horizontal).`]},
+  {t:'Résoudre sin x = k, cos x = k, tan x = k',q:'« Résoudre l\'équation… »',s:[
+   R`Calculatrice en <b>RAD</b> : \(\alpha=\arcsin k\) (ou arccos, arctan).`,
+   R`\(\sin x=k\) : \(x=\alpha+2k\pi\) ou \(x=\pi-\alpha+2k\pi\).`,
+   R`\(\cos x=k\) : \(x=\alpha+2k\pi\) ou \(x=-\alpha+2k\pi\).`,
+   R`\(\tan x=k\) : \(x=\alpha+k\pi\).`,
+   R`Pour \(\sin(bx+c)=k\) : poser \(X=bx+c\), résoudre en \(X\), puis isoler \(x\) (diviser aussi le \(2k\pi\) par \(b\)). Lister les solutions dans l'intervalle demandé.`]},
+  {t:'Radians, arcs, secteurs',q:'« longueur d\'arc », « aire d\'un secteur »',s:[
+   R`\(\pi\) rad = 180°.`,R`Arc : \(L=r\theta\) (θ en radians).`,R`Secteur : \(A=\frac{r^2\theta}2\) (ou règle de trois avec \(\pi r^2\)).`]}
+ ],
+ pieges:[R`Calculatrice en mode DEG au lieu de RAD.`,R`Oublier la 2e famille de solutions (\(\pi-\alpha\) pour sin, \(-\alpha\) pour cos).`,R`La période dépend de b seulement, pas de a.`,R`Dans \(\sin(bx+c)=k\), le \(2k\pi\) se divise aussi par b.`],
+ flash:[
+  [R`Période de \(a\sin(bx+c)\) ?`,R`\(\frac{2\pi}{|b|}\)`],[R`Amplitude de \(a\sin(bx+c)+d\) ?`,R`\(|a|\) ; max \(d+|a|\), min \(d-|a|\)`],
+  [R`Solutions de \(\sin x=k\) ?`,R`\(\alpha+2k\pi\) et \(\pi-\alpha+2k\pi\)`],[R`Solutions de \(\cos x=k\) ?`,R`\(\pm\alpha+2k\pi\)`],[R`Solutions de \(\tan x=k\) ?`,R`\(\alpha+k\pi\)`],
+  [R`\(\sin\frac\pi6,\ \sin\frac\pi4,\ \sin\frac\pi3\) ?`,R`\(\frac12,\ \frac{\sqrt2}2,\ \frac{\sqrt3}2\)`],[R`\(\cos\frac\pi6,\ \cos\frac\pi4,\ \cos\frac\pi3\) ?`,R`\(\frac{\sqrt3}2,\ \frac{\sqrt2}2,\ \frac12\)`],
+  [R`Le sinus atteint son max quand l'angle vaut…`,R`\(\frac\pi2+2k\pi\) (min : \(-\frac\pi2+2k\pi\))`],
+  [R`150° en radians ?`,R`\(\frac{5\pi}6\)`],[R`Longueur d'un arc ?`,R`\(L=r\theta\) (θ en rad)`]
+ ],
+ ex:[
+  {id:'e51',src:'Examen jury mars 2024',pts:7,t:'f(x) = 5/2 · sin(3x/2)',
+   e:R`\(f(x)=\frac52\sin\left(\frac{3x}{2}\right)\). a) Période. b) Coordonnées de deux minima consécutifs. c) Représenter sur deux périodes.`,
+   s:[[1,R`a) \(T=\frac{2\pi}{3/2}=\frac{4\pi}3\approx4{,}19\).`],[2,R`b) Minimum quand \(\frac{3x}2=-\frac\pi2+2k\pi\iff x=-\frac\pi3+\frac{4k\pi}3\). Pour k = 1 et 2 : \(x=\pi\) et \(x=\frac{7\pi}3\), \(y=-\frac52\).`],[4,R`c) Quarts de période \(\frac\pi3\) : \(f(0)=0\), max \(\left(\frac\pi3;\frac52\right)\), \(f\left(\frac{2\pi}3\right)=0\), min \(\left(\pi;-\frac52\right)\), \(f\left(\frac{4\pi}3\right)=0\), puis on recommence jusqu'à \(\frac{8\pi}3\).`]],
+   r:R`\(T=\frac{4\pi}3\) ; minima <b>\((\pi;-2{,}5)\)</b> et <b>\(\left(\frac{7\pi}3;-2{,}5\right)\)</b>.`,figR:'q5'},
+  {id:'e52',src:'Entraînement',pts:3,t:'Radians, arc, secteur',
+   e:R`a) 150° en radians. b) 2 rad en degrés. c) Cercle de rayon 6 cm, angle au centre \(\frac{2\pi}3\) : longueur de l'arc et aire du secteur.`,
+   s:[[1,R`a) \(150\cdot\frac\pi{180}=\frac{5\pi}6\). b) \(2\cdot\frac{180}\pi\approx114{,}59°\).`],[2,R`c) \(L=6\cdot\frac{2\pi}3=4\pi\approx12{,}57\) cm.`],[3,R`\(A=\frac{36\cdot2\pi/3}{2}=12\pi\approx37{,}70\) cm².`]],
+   r:R`\(\frac{5\pi}6\) ; 114,59° ; <b>12,57 cm</b> ; <b>37,70 cm²</b>.`},
+  {id:'e53',src:'Entraînement',pts:3,t:'Équations de base sur [0 ; 2π]',
+   e:R`a) \(\sin x=\frac12\) b) \(\cos x=-\frac{\sqrt2}2\) c) \(\tan x=\sqrt3\)`,
+   s:[[2,R`a) \(\alpha=\frac\pi6\) → \(\frac\pi6\) et \(\pi-\frac\pi6=\frac{5\pi}6\).`],[3,R`b) \(\alpha=\frac{3\pi}4\) → \(\frac{3\pi}4\) et \(-\frac{3\pi}4+2\pi=\frac{5\pi}4\).`],[4,R`c) \(\alpha=\frac\pi3\) → \(\frac\pi3\) et \(\frac\pi3+\pi=\frac{4\pi}3\).`]],
+   r:R`a) \(\frac\pi6,\frac{5\pi}6\) b) \(\frac{3\pi}4,\frac{5\pi}4\) c) \(\frac\pi3,\frac{4\pi}3\)`},
+  {id:'e54',src:'Entraînement',pts:4,t:'2 sin(2x) = 1',
+   e:R`Résoudre \(2\sin(2x)=1\) sur \([0;2\pi]\).`,
+   s:[[5,R`\(\sin(2x)=\frac12\). Posons \(X=2x\) : \(X=\frac\pi6+2k\pi\) ou \(X=\frac{5\pi}6+2k\pi\).`],[5,R`\(x=\frac\pi{12}+k\pi\) ou \(x=\frac{5\pi}{12}+k\pi\).`],[5,R`Sur \([0;2\pi]\) : k = 0 et k = 1.`]],
+   r:R`<b>\(\frac{\pi}{12},\ \frac{5\pi}{12},\ \frac{13\pi}{12},\ \frac{17\pi}{12}\)</b>`},
+  {id:'e55',src:'Entraînement',pts:4,t:'La marée',fig:'tide',
+   e:R`La hauteur d'eau (m) est \(h(t)=2\sin\left(\frac{\pi t}6\right)+3\), t en heures. a) Période, hauteur max et min. b) Quand l'eau atteint-elle 4 m pendant le premier cycle ?`,
+   s:[[1,R`a) \(T=\frac{2\pi}{\pi/6}=12\) h ; max \(3+2=5\) m (à t = 3) ; min 1 m (à t = 9).`],[5,R`b) \(\sin\frac{\pi t}6=\frac12\) → \(\frac{\pi t}6=\frac\pi6\) ou \(\frac{5\pi}6\) → \(t=1\) h ou \(t=5\) h.`]],
+   r:R`12 h ; 5 m et 1 m ; <b>t = 1 h et t = 5 h</b>.`},
+  {id:'e56',src:'Entraînement',pts:2,t:'Retrouver l\'expression',fig:'sin2x',
+   e:R`Le graphique est une transformée simple de \(\sin x\). Donner son expression.`,
+   s:[[1,R`Amplitude 1, passe par 0 en 0 : forme \(\sin(bx)\).`],[1,R`Période lue : \(\pi\) → \(\frac{2\pi}b=\pi\Rightarrow b=2\).`]],
+   r:R`<b>\(f(x)=\sin(2x)\)</b>`},
+  {id:'e57',src:'Entraînement',pts:3,t:'Avec un déphasage',
+   e:R`\(f(x)=3\sin\left(2x-\frac\pi2\right)\) : amplitude, période, déphasage, premier maximum positif.`,
+   s:[[1,R`Amplitude 3, période \(\pi\).`],[1,R`\(2x-\frac\pi2=2\left(x-\frac\pi4\right)\) → décalage de \(\frac\pi4\) vers la droite.`],[1,R`Max : \(2x-\frac\pi2=\frac\pi2\Rightarrow x=\frac\pi2\), \(y=3\).`]],
+   r:R`3 ; π ; \(\frac\pi4\) à droite ; max <b>\(\left(\frac\pi2;3\right)\)</b>.`}
+ ]},
+
+{id:'c6',code:'6GUAA1',nom:'Probabilités',pts:10,min:35,
+ tombe:'Arbre avec inconnues (trouver x et y à partir de P(B)), P(A∪B) selon que A et B sont incompatibles / inclus / indépendants. Aussi : probabilité conditionnelle, Bayes avec un arbre, dénombrement.',
+ recettes:[
+  {t:'Arbre de probabilité',q:'Une expérience en deux étapes',s:[
+   R`Sur chaque nœud, les branches somment à 1 → \(P(\bar A)=1-P(A)\).`,
+   R`Sur la 2e étape, ce sont des probabilités <b>conditionnelles</b> : \(P(B|A)\).`,
+   R`Probabilité d'un chemin = produit des branches : \(P(A\cap B)=P(A)\cdot P(B|A)\).`,
+   R`Probabilité totale = somme des chemins qui mènent à B : \(P(B)=P(A)P(B|A)+P(\bar A)P(B|\bar A)\).`,
+   R`Question inversée (Bayes) : \(P(A|B)=\frac{P(A\cap B)}{P(B)}\).`]},
+  {t:'P(A∪B) dans les 3 situations',q:'« incompatibles », « A ne peut se réaliser que si B », « indépendants »',s:[
+   R`Toujours : \(P(A\cup B)=P(A)+P(B)-P(A\cap B)\).`,
+   R`Incompatibles : \(P(A\cap B)=0\).`,
+   R`« A ne peut être réalisé que si B est réalisé » : \(A\subset B\), donc \(A\cap B=A\) et \(A\cup B=B\).`,
+   R`Indépendants : \(P(A\cap B)=P(A)\cdot P(B)\).`,
+   R`Remplacer et résoudre en \(P(B)\).`]},
+  {t:'Dénombrement',q:'« combien de… », Laplace',s:[
+   R`L'ordre compte ? Répétition permise ?`,
+   R`Ordre + répétition : \(n^p\). Ordre sans répétition : \(A_n^p=\frac{n!}{(n-p)!}\). Tout ranger : \(n!\) (avec objets identiques : \(\frac{n!}{k_1!k_2!\dots}\)).`,
+   R`Pas d'ordre : \(C_n^p=\frac{n!}{p!(n-p)!}\).`,
+   R`Laplace : \(P=\frac{\text{cas favorables}}{\text{cas possibles}}\). « Au moins un » → passer par le contraire.`]}
+ ],
+ pieges:[R`Confondre \(P(B|A)\) et \(P(A|B)\).`,R`Incompatibles ≠ indépendants.`,R`« Au moins un » : \(1-P(\text{aucun})\).`,R`Indépendance à <b>vérifier</b> par calcul : \(P(A\cap B)\) vs \(P(A)P(B)\).`],
+ flash:[
+  [R`\(P(A\cup B)\) ?`,R`\(P(A)+P(B)-P(A\cap B)\)`],[R`\(P(B|A)\) ?`,R`\(\frac{P(A\cap B)}{P(A)}\)`],
+  [R`A et B indépendants ⟺`,R`\(P(A\cap B)=P(A)P(B)\)`],[R`A et B incompatibles ⟺`,R`\(P(A\cap B)=0\)`],
+  [R`« A ne peut se réaliser que si B se réalise » →`,R`\(A\subset B\) : \(P(A\cap B)=P(A)\), \(P(A\cup B)=P(B)\)`],
+  [R`Je vois « au moins un » →`,R`\(1-P(\text{aucun})\)`],
+  [R`Probabilité d'un chemin dans un arbre ?`,R`Produit des probabilités des branches`],
+  [R`\(C_n^p\) ?`,R`\(\frac{n!}{p!(n-p)!}\) : choix sans ordre`],[R`\(A_n^p\) ?`,R`\(\frac{n!}{(n-p)!}\) : choix ordonné sans répétition`],
+  [R`Je cherche la probabilité « inversée » d'un arbre →`,R`Bayes : \(P(A|B)=\frac{P(A\cap B)}{P(B)}\), P(B) par les chemins`]
+ ],
+ ex:[
+  {id:'e61',src:'Examen jury mars 2024',pts:4,t:'Arbre avec inconnues',
+   e:R`Arbre : \(P(A)=\frac27\), \(P(\bar A)=x\) ; sous A : \(P(B|A)=y\) ; sous \(\bar A\) : \(P(\bar B|\bar A)=\frac12\). On sait que \(P(B)=\frac{23}{42}\). a) Calculer x. b) Calculer y.`,
+   s:[[1,R`a) \(x=1-\frac27=\frac57\).`],[1,R`\(P(B|\bar A)=1-\frac12=\frac12\).`],[4,R`b) \(P(B)=\frac27y+\frac57\cdot\frac12=\frac{23}{42}\iff\frac27y=\frac{23}{42}-\frac{15}{42}=\frac{8}{42}\iff y=\frac{8}{42}\cdot\frac72=\frac23\).`]],
+   r:R`<b>\(x=\frac57\)</b>, <b>\(y=\frac23\)</b>.`},
+  {id:'e62',src:'Examen jury mars 2024',pts:6,t:'Trois situations',
+   e:R`\(P(A)=\frac16\) et \(P(A\cup B)=\frac12\). Calculer \(P(B)\) si a) A et B incompatibles ; b) A ne peut être réalisé que si B l'est ; c) A et B indépendants.`,
+   s:[[2,R`a) \(\frac12=\frac16+P(B)\Rightarrow P(B)=\frac13\).`],[3,R`b) \(A\subset B\Rightarrow A\cup B=B\Rightarrow P(B)=\frac12\).`],[4,R`c) \(\frac12=\frac16+P(B)-\frac16P(B)\iff\frac13=\frac56P(B)\iff P(B)=\frac25\).`]],
+   r:R`a) <b>\(\frac13\)</b> b) <b>\(\frac12\)</b> c) <b>\(\frac25\)</b>`},
+  {id:'e63',src:'Entraînement',pts:4,t:'Test médical (Bayes)',
+   e:R`Une maladie touche 2 % de la population. Le test est positif chez 95 % des malades et chez 10 % des non-malades. a) P(test positif) ? b) Une personne est positive : probabilité qu'elle soit malade ?`,
+   s:[[1,R`Arbre : M (0,02) puis + (0,95) ; \(\bar M\) (0,98) puis + (0,10).`],[4,R`a) \(P(+)=0{,}02\cdot0{,}95+0{,}98\cdot0{,}10=0{,}019+0{,}098=0{,}117\).`],[5,R`b) \(P(M|+)=\frac{0{,}019}{0{,}117}\approx0{,}16\). Seulement 16 % : la maladie est rare, la plupart des positifs sont des faux positifs.`]],
+   r:R`a) <b>0,117</b> b) <b>≈ 0,16</b>`},
+  {id:'e64',src:'Entraînement',pts:3,t:'Dénombrer',
+   e:R`a) Nombre de grilles au Lotto (6 numéros parmi 45). b) Codes à 4 chiffres ; avec chiffres tous différents. c) Anagrammes de ANANAS.`,
+   s:[[4,R`a) Pas d'ordre : \(C_{45}^6=8\,145\,060\).`],[2,R`b) \(10^4=10\,000\) ; sans répétition \(10\cdot9\cdot8\cdot7=5\,040\).`],[2,R`c) \(\frac{6!}{3!\,2!\,1!}=60\) (3 A, 2 N, 1 S).`]],
+   r:R`<b>8 145 060 ; 10 000 et 5 040 ; 60</b>`},
+  {id:'e65',src:'Entraînement',pts:2,t:'Au moins un 6',
+   e:R`On lance un dé 4 fois. Probabilité d'obtenir au moins un 6 ?`,
+   s:[[4,R`Contraire : aucun 6 → \(\left(\frac56\right)^4=\frac{625}{1296}\).`],[4,R`\(1-\frac{625}{1296}=\frac{671}{1296}\approx0{,}52\).`]],
+   r:R`<b>≈ 0,52</b>`},
+  {id:'e66',src:'Entraînement',pts:3,t:'Tableau et indépendance',
+   e:R`Classe de 30 : 18 filles, 12 garçons. 10 filles et 4 garçons portent des lunettes. a) P(lunettes). b) P(fille | lunettes). c) « fille » et « lunettes » sont-ils indépendants ?`,
+   s:[[1,R`a) \(\frac{14}{30}\approx0{,}47\).`],[1,R`b) \(\frac{10}{14}\approx0{,}71\).`],[2,R`c) \(P(F\cap L)=\frac{10}{30}\approx0{,}33\) ; \(P(F)P(L)=0{,}6\cdot0{,}467=0{,}28\neq0{,}33\) → dépendants.`]],
+   r:R`<b>0,47 ; 0,71 ; dépendants</b>`}
+ ]},
+
+{id:'c7',code:'6GUAA2',nom:'Lois de probabilités',pts:14,min:45,
+ tombe:'La plus grosse question (14 pts en 2024). Espérance d\'un gain (bénéfice moyen), loi normale : choisir le bon graphique (moyenne, 95 %), calculer P(a < X < b) avec la table. Aussi : loi binomiale.',
+ recettes:[
+  {t:'Espérance d\'un gain (variable aléatoire quelconque)',q:'« Quel bénéfice peut-il espérer ? », « le jeu est-il équitable ? »',s:[
+   R`Lister toutes les situations possibles (bien séparer « A seul », « B seul », « les deux », « aucun »).`,
+   R`Pour chacune : la valeur \(x_i\) de X (gain net = recette − coûts − mise).`,
+   R`Les probabilités \(p_i\) (vérifier que la somme vaut 1).`,
+   R`\(E(X)=\sum x_ip_i\) (formulaire). Si demandé : \(V(X)=\sum p_ix_i^2-E(X)^2\), \(\sigma=\sqrt V\).`,
+   R`Phrase : « en moyenne, le fabricant gagne … € par GSM ». Jeu équitable si \(E=0\).`]},
+  {t:'Loi binomiale',q:'n répétitions identiques et indépendantes, succès/échec',s:[
+   R`Justifier : n épreuves identiques et indépendantes, 2 issues, p constant → \(X\sim B(n;p)\).`,
+   R`\(P(X=k)=C_n^k\,p^k(1-p)^{n-k}\) (formulaire).`,
+   R`« Au moins 1 » : \(1-P(X=0)=1-(1-p)^n\).`,
+   R`\(E=np\), \(V=npq\), \(\sigma=\sqrt{npq}\).`]},
+  {t:'Loi normale avec la table',q:'« X suit la loi normale de moyenne μ et d\'écart-type σ »',s:[
+   R`Dessiner la cloche, centrer en μ, hachurer la zone demandée.`,
+   R`Centrer-réduire : \(z=\frac{x-\mu}{\sigma}\) (arrondi à 2 décimales pour la table).`,
+   R`\(P(X<a)=\Phi(z)\) ; \(P(X>a)=1-\Phi(z)\) ; si z < 0 : \(\Phi(-z)=1-\Phi(z)\).`,
+   R`\(P(a<X<b)=\Phi(z_b)-\Phi(z_a)\).`,
+   R`Lecture inverse : \(P(X<a)=0{,}90\) → chercher 0,90 dans la table → \(z\approx1{,}28\) → \(a=\mu+z\sigma\).`]},
+  {t:'Choisir le bon graphique (loi normale)',q:'« Quel graphique représente la situation ? »',s:[
+   R`Le sommet doit être en \(x=\mu\).`,
+   R`95 % ≈ entre \(\mu-2\sigma\) et \(\mu+2\sigma\) (68 % pour ±σ, 99,7 % pour ±3σ).`,
+   R`Vérifier sur les graduations que la zone hachurée va bien de \(\mu-2\sigma\) à \(\mu+2\sigma\).`]}
+ ],
+ pieges:[R`Confondre σ et σ² (la loi est donnée avec l'écart-type).`,R`P(X > a) = 1 − Φ(z), ne pas oublier le « 1 − ».`,R`z négatif : la table ne donne que z ≥ 0 → symétrie.`,R`Loi continue : P(X = a) = 0, donc < et ≤ c'est pareil.`,R`Dans l'espérance, les cas « A seul » et « A et B » ne doivent pas se chevaucher.`],
+ flash:[
+  [R`\(E(X)\) ?`,R`\(\sum x_ip_i\)`],[R`\(V(X)\) ?`,R`\(\sum p_ix_i^2-E(X)^2\)`],
+  [R`Binomiale \(P(X=k)\) ?`,R`\(C_n^kp^k(1-p)^{n-k}\)`],[R`E et V d'une binomiale ?`,R`\(np\) et \(npq\)`],
+  [R`Je vois une loi normale N(μ ; σ) →`,R`\(z=\frac{x-\mu}\sigma\), puis la table de Φ`],
+  [R`\(P(X>a)\) avec la table ?`,R`\(1-\Phi(z)\)`],[R`\(\Phi(-z)\) ?`,R`\(1-\Phi(z)\)`],
+  [R`68 – 95 – 99,7 ?`,R`Proportions dans μ ± σ, μ ± 2σ, μ ± 3σ`],
+  [R`Jeu équitable ⟺`,R`Espérance du gain net = 0`],
+  [R`Je vois « 10 % ont A, 7 % ont B, 2 % les deux » →`,R`A seul 8 %, B seul 5 %, les deux 2 %, aucun 85 %`],
+  [R`\(\Phi(z)=0{,}90\) donne z ≈ ?`,R`1,28 (et 1,645 pour 0,95 ; 1,96 pour 0,975)`]
+ ],
+ ex:[
+  {id:'e71',src:'Examen jury mars 2024',pts:7,t:'Bénéfice espéré sur un GSM',
+   e:R`Un GSM coûte 200 € à fabriquer et est vendu 600 € après réparation. 10 % ont le défaut A, 7 % le défaut B, 2 % les deux. Réparer A coûte 40 €, B 75 €. Quel bénéfice moyen le fabricant peut-il espérer par GSM ?`,
+   s:[[1,R`Cas : aucun défaut ; A seul ; B seul ; A et B.`],[3,R`Probabilités : A seul \(0{,}10-0{,}02=0{,}08\) ; B seul \(0{,}07-0{,}02=0{,}05\) ; les deux \(0{,}02\) ; aucun \(1-0{,}08-0{,}05-0{,}02=0{,}85\).`],[2,R`Bénéfices : aucun \(600-200=400\) ; A seul 360 ; B seul 325 ; les deux 285.`],[4,R`\(E=400\cdot0{,}85+360\cdot0{,}08+325\cdot0{,}05+285\cdot0{,}02=340+28{,}8+16{,}25+5{,}7=390{,}75\).`],[5,R`En moyenne, le fabricant gagne 390,75 € par GSM.`]],
+   r:R`<b>390,75 €</b>`},
+  {id:'e72',src:'Examen jury mars 2024',pts:7,t:'Batterie : loi normale',fig:'n72',
+   e:R`La durée de vie X d'une batterie suit la loi normale de moyenne 600 et d'écart-type 75. a) Quel graphique représente la situation ? (À l'examen, 4 cloches : deux centrées sur 0, deux centrées sur 600 avec une zone de 95 % étroite ou large.) b) Calculer \(P(550<X<800)\).`,
+   s:[[1,R`a) Le sommet doit être en 600 → on élimine les cloches centrées en 0.`],[4,R`95 % ≈ \(\mu\pm2\sigma=600\pm150\) → de 450 à 750 : la bonne cloche est celle dont la zone hachurée va de 450 à 750 (6 graduations de 25 de chaque côté), pas la zone étroite.`],[3,R`b) \(z_1=\frac{550-600}{75}\approx-0{,}67\) ; \(z_2=\frac{800-600}{75}\approx2{,}67\).`],[3,R`\(P=\Phi(2{,}67)-\Phi(-0{,}67)=0{,}9962-(1-0{,}7486)=0{,}7448\).`]],
+   r:R`a) Cloche centrée en 600 avec 95 % entre <b>450 et 750</b>. b) <b>≈ 0,74</b>`,figR:'n72b'},
+  {id:'e73',src:'Entraînement',pts:4,t:'Jeu équitable ?',
+   e:R`On mise 2 € et on lance un dé : 6 → on reçoit 10 € ; 5 → on reçoit 2 € ; sinon rien. Le jeu est-il équitable ? Écart-type du gain ?`,
+   s:[[2,R`Gain net : 6 → +8 ; 5 → 0 ; 1 à 4 → −2.`],[3,R`Probabilités : \(\frac16,\ \frac16,\ \frac46\).`],[4,R`\(E=\frac86+0-\frac86=0\) → équitable.`],[4,R`\(V=\frac{64}6+0+\frac{4\cdot4}6-0=\frac{80}6\approx13{,}33\Rightarrow\sigma\approx3{,}65\) €.`]],
+   r:R`<b>Équitable</b> (E = 0), σ ≈ <b>3,65 €</b>.`},
+  {id:'e74',src:'Entraînement',pts:5,t:'QCM au hasard (binomiale)',
+   e:R`QCM de 10 questions à 4 choix, réponses au hasard. X = nombre de bonnes réponses. a) Loi de X. b) P(X = 3). c) P(X ≥ 1). d) E(X) et σ.`,
+   s:[[1,R`a) 10 épreuves identiques indépendantes, succès p = 0,25 → \(X\sim B(10;0{,}25)\).`],[2,R`b) \(C_{10}^3\,0{,}25^3\,0{,}75^7=120\cdot0{,}015625\cdot0{,}13348\approx0{,}25\).`],[3,R`c) \(1-0{,}75^{10}\approx1-0{,}0563=0{,}94\).`],[4,R`d) \(E=2{,}5\) ; \(\sigma=\sqrt{10\cdot0{,}25\cdot0{,}75}\approx1{,}37\).`]],
+   r:R`<b>0,25 ; 0,94 ; E = 2,5 ; σ ≈ 1,37</b>`},
+  {id:'e75',src:'Entraînement',pts:5,t:'Quotient intellectuel',
+   e:R`QI \(\sim N(100;15)\). a) P(QI > 130). b) P(85 < QI < 115). c) Seuil au-dessus duquel se trouvent les 10 % les plus élevés.`,
+   s:[[3,R`a) \(z=2\) → \(1-\Phi(2)=1-0{,}9772=0{,}0228\).`],[3,R`b) \(z=\pm1\) → \(\Phi(1)-(1-\Phi(1))=2\cdot0{,}8413-1=0{,}6826\).`],[5,R`c) \(\Phi(z)=0{,}90\) → \(z\approx1{,}28\) → \(100+1{,}28\cdot15=119{,}2\).`]],
+   r:R`<b>0,0228 ; 0,6826 ; ≈ 119,2</b>`},
+  {id:'e76',src:'Entraînement',pts:2,t:'z négatif',
+   e:R`Poids d'un paquet \(\sim N(500;8)\) g. P(paquet < 490 g) ?`,
+   s:[[2,R`\(z=\frac{490-500}8=-1{,}25\).`],[3,R`\(\Phi(-1{,}25)=1-\Phi(1{,}25)=1-0{,}8944=0{,}1056\).`]],
+   r:R`<b>≈ 0,11</b>`},
+  {id:'e77',src:'Entraînement',pts:2,t:'Loi uniforme continue',
+   e:R`Un bus passe toutes les 15 minutes. Le temps d'attente X est uniforme sur [0 ; 15]. P(X < 4) et E(X) ?`,
+   s:[[0,R`\(P(X<4)=\frac{4-0}{15-0}\approx0{,}27\).`],[0,R`\(E=\frac{0+15}2=7{,}5\) min.`]],
+   r:R`<b>0,27 ; 7,5 min</b>`}
+ ]},
+
+{id:'c8',code:'6GUAA3',nom:'Intégrales',pts:12,min:45,
+ tombe:'Primitives (fonction composée linéaire, somme, par parties), une intégrale définie par substitution, une intégrale lue sur un graphique (aires de triangles/trapèzes). Aussi : aire entre deux courbes, volume de révolution.',
+ recettes:[
+  {t:'Trouver une primitive : quelle technique ?',q:'« Déterminer les primitives suivantes »',s:[
+   R`Somme de fonctions de la table → primitive terme à terme (\(\frac1{x^2}=x^{-2}\to-\frac1x\)).`,
+   R`Fonction de \((ax+b)\) → primitive de la fonction ÷ a : \(\int\cos(3x+1)dx=\frac13\sin(3x+1)+C\).`,
+   R`On voit \(u'\) à côté d'une fonction de \(u\) → substitution : \(\int u'u^n=\frac{u^{n+1}}{n+1}\), \(\int\frac{u'}u=\ln|u|\), \(\int u'e^u=e^u\).`,
+   R`Produit de deux types différents (\(x\cdot e^x\), \(x^2\ln x\)) → <b>par parties</b>.`,
+   R`Toujours « + C ». Vérifier en dérivant.`]},
+  {t:'Intégration par parties',q:'Produit polynôme × exp, ou polynôme × ln',s:[
+   R`\(\int u\,v'\,dx=uv-\int u'v\,dx\).`,
+   R`Choix : avec ln → \(u=\ln x\) ; avec \(e^x\) ou sin/cos → \(u=\) le polynôme.`,
+   R`Écrire \(u,\ u',\ v',\ v\) puis appliquer.`]},
+  {t:'Intégrale définie',q:'« Calculer \(\int_a^b\ldots\) »',s:[
+   R`Trouver une primitive F.`,R`\([F(x)]_a^b=F(b)-F(a)\).`,R`Substitution : soit on revient à x, soit on change les bornes.`,R`Donner la valeur exacte puis au centième.`]},
+  {t:'Intégrale lue sur un graphique',q:'« Déterminer \(\int_a^bf(x)dx\) » avec un graphe en segments',s:[
+   R`Découper la zone entre la courbe et l'axe en triangles, rectangles, trapèzes.`,
+   R`Aire au-dessus de l'axe → compte +, en dessous → compte −.`,
+   R`Trapèze : \(\frac{(B+b)\,h}{2}\) ; triangle : \(\frac{b\,h}{2}\).`]},
+  {t:'Aire et volume',q:'« Calculer l\'aire de la surface… », « volume engendré par rotation »',s:[
+   R`Points d'intersection (bornes) : résoudre \(f(x)=g(x)\) ou \(f(x)=0\).`,
+   R`Aire entre deux courbes : \(\int_a^b(\text{haut}-\text{bas})dx\).`,
+   R`Aire courbe-axe : si f change de signe, découper et prendre les valeurs absolues. Une aire est toujours > 0.`,
+   R`Volume autour de Ox : \(V=\pi\int_a^bf(x)^2dx\).`]}
+ ],
+ pieges:[R`Oublier le « + C ».`,R`\(\int\cos(ax+b)\) : diviser par a (pas multiplier).`,R`Une aire est positive : découper aux zéros de f.`,R`\(\int\frac1{x^2}dx=-\frac1x\), pas \(\ln(x^2)\).`],
+ flash:[
+  [R`\(\int x^n\,dx\) ?`,R`\(\frac{x^{n+1}}{n+1}+C\) (n ≠ −1)`],[R`\(\int\frac1x\,dx\) ?`,R`\(\ln|x|+C\)`],[R`\(\int\frac1{x^2}\,dx\) ?`,R`\(-\frac1x+C\)`],
+  [R`\(\int\cos x\) et \(\int\sin x\) ?`,R`\(\sin x+C\) et \(-\cos x+C\)`],[R`\(\int f(ax+b)\,dx\) ?`,R`\(\frac1aF(ax+b)+C\)`],
+  [R`Je vois \(u'\cdot u^n\) →`,R`\(\frac{u^{n+1}}{n+1}+C\)`],[R`Je vois \(\frac{u'}{u}\) →`,R`\(\ln|u|+C\)`],
+  [R`Je vois \(x\cdot e^x\) ou \(x^2\ln x\) →`,R`Par parties : \(uv-\int u'v\)`],[R`\(\int\ln x\,dx\) ?`,R`\(x\ln x-x+C\)`],
+  [R`Aire entre deux courbes ?`,R`\(\int_a^b(\text{haut}-\text{bas})dx\), bornes = intersections`],[R`Volume de révolution autour de Ox ?`,R`\(\pi\int_a^bf(x)^2dx\)`]
+ ],
+ ex:[
+  {id:'e81',src:'Examen jury mars 2024',pts:6,t:'Trois primitives',
+   e:R`a) \(\int\cos(3x+1)\,dx\) b) \(\int\left(x+\frac1{x^2}\right)dx\) c) \(\int2x^2\ln x\,dx\)`,
+   s:[[2,R`a) Fonction de \(3x+1\) : \(\frac13\sin(3x+1)+C\).`],[1,R`b) \(\frac{x^2}2+\frac{x^{-1}}{-1}=\frac{x^2}2-\frac1x+C\).`],[2,R`c) Par parties : \(u=\ln x\), \(u'=\frac1x\) ; \(v'=2x^2\), \(v=\frac{2x^3}3\).`],[2,R`\(\frac{2x^3}3\ln x-\int\frac{2x^3}3\cdot\frac1x\,dx=\frac{2x^3}3\ln x-\frac{2x^3}9+C\).`]],
+   r:R`a) \(\frac13\sin(3x+1)+C\) b) \(\frac{x^2}2-\frac1x+C\) c) <b>\(\frac{2x^3}3\ln x-\frac{2x^3}9+C\)</b>`},
+  {id:'e82',src:'Examen jury mars 2024',pts:4,t:'Intégrale par substitution',
+   e:R`Calculer \(\displaystyle\int_1^3(1+e^x)^3e^x\,dx\).`,
+   s:[[1,R`\(u=1+e^x\), \(u'=e^x\) : forme \(u'u^3\).`],[1,R`Primitive : \(\frac{(1+e^x)^4}4\).`],[3,R`\(\left[\frac{(1+e^x)^4}4\right]_1^3=\frac{(1+e^3)^4-(1+e)^4}4\approx49\,369{,}47\).`]],
+   r:R`<b>\(\frac{(1+e^3)^4-(1+e)^4}4\approx49\,369{,}47\)</b>`},
+  {id:'e83',src:'Examen jury mars 2024',pts:2,t:'Intégrale sur un graphique',fig:'q83',
+   e:R`f est formée de segments : de (−4 ; −3) à (1 ; 2), puis de (1 ; 2) à (5 ; 1). Déterminer \(\int_{-1}^5f(x)\,dx\).`,
+   s:[[4,R`Sur [−1 ; 1] : triangle de base 2 et de hauteur 2 → aire 2 (au-dessus de l'axe).`],[4,R`Sur [1 ; 5] : trapèze de bases 2 et 1, de hauteur 4 → \(\frac{(2+1)\cdot4}2=6\).`],[4,R`Total \(2+6=8\).`]],
+   r:R`<b>8</b>`,figR:'q83s'},
+  {id:'e84',src:'Entraînement',pts:3,t:'Aire sous une parabole',
+   e:R`Aire comprise entre \(f(x)=4-x^2\) et l'axe des x.`,
+   s:[[5,R`Zéros : \(x=\pm2\) ; f ≥ 0 entre les deux.`],[3,R`\(\int_{-2}^2(4-x^2)dx=\left[4x-\frac{x^3}3\right]_{-2}^2=\left(8-\frac83\right)-\left(-8+\frac83\right)=\frac{32}3\approx10{,}67\).`]],
+   r:R`<b>\(\frac{32}3\approx10{,}67\)</b> u.a.`},
+  {id:'e85',src:'Entraînement',pts:4,t:'Aire entre deux courbes',fig:'e85',
+   e:R`Aire entre \(f(x)=x^2\) et \(g(x)=x+2\).`,
+   s:[[5,R`\(x^2=x+2\iff x^2-x-2=0\iff x=-1\) ou \(x=2\). Entre les deux, la droite est au-dessus.`],[5,R`\(\int_{-1}^2(x+2-x^2)dx=\left[\frac{x^2}2+2x-\frac{x^3}3\right]_{-1}^2=\frac{10}3-\left(-\frac76\right)=\frac92\).`]],
+   r:R`<b>4,5</b> u.a.`},
+  {id:'e86',src:'Entraînement',pts:3,t:'Piège du signe',fig:'e86',
+   e:R`\(f(x)=x^2-1\) sur [0 ; 2]. Calculer \(\int_0^2f\) puis l'aire entre la courbe et l'axe.`,
+   s:[[3,R`\(\int_0^2(x^2-1)dx=\left[\frac{x^3}3-x\right]_0^2=\frac23\).`],[5,R`f < 0 sur [0 ; 1[ : aire \(=\left|\int_0^1\right|+\int_1^2=\frac23+\frac43=2\).`]],
+   r:R`Intégrale <b>\(\frac23\)</b>, aire <b>2</b> : ce n'est pas la même chose.`},
+  {id:'e87',src:'Entraînement',pts:3,t:'Volume de révolution',
+   e:R`Volume engendré par la rotation de \(y=\sqrt x\), \(x\in[0;4]\), autour de Ox.`,
+   s:[[5,R`\(V=\pi\int_0^4(\sqrt x)^2dx=\pi\int_0^4x\,dx=\pi\left[\frac{x^2}2\right]_0^4=8\pi\).`]],
+   r:R`<b>\(8\pi\approx25{,}13\)</b> u.v.`},
+  {id:'e88',src:'Entraînement',pts:4,t:'Parties et substitution',
+   e:R`a) \(\int xe^x\,dx\) b) \(\int\frac{x}{x^2+1}\,dx\) c) primitive F de \(3x^2-2x\) telle que \(F(1)=4\).`,
+   s:[[2,R`a) \(u=x\), \(v'=e^x\) : \(xe^x-\int e^x=xe^x-e^x+C\).`],[1,R`b) \(\frac12\cdot\frac{2x}{x^2+1}\) → \(\frac12\ln(x^2+1)+C\).`],[5,R`c) \(F=x^3-x^2+C\), \(F(1)=C=4\) → \(F(x)=x^3-x^2+4\).`]],
+   r:R`a) \(xe^x-e^x+C\) b) \(\frac12\ln(x^2+1)+C\) c) <b>\(x^3-x^2+4\)</b>`}
+ ]},
+
+{id:'c9',code:'6GUAA4',nom:'Exponentielles et logarithmes',pts:8,min:35,
+ tombe:R`Une fonction du type \((ax+b)e^{kx}\) en contexte : inéquation f > 0, signe de f', variations, maximum. Aussi : équations exp/log, croissance exponentielle (C14, population), l'Hospital.`,
+ recettes:[
+  {t:'Étudier f(x) = (ax + b)·e^{kx}',q:'« tableau de signes de f\' », « maximum », « f(x) > 0 »',s:[
+   R`Signe de f : \(e^{kx}>0\) toujours → f a le signe de \(ax+b\).`,
+   R`Produit : \(f'=a\,e^{kx}+(ax+b)\,k\,e^{kx}\).`,
+   R`Mettre \(e^{kx}\) en évidence : \(f'=e^{kx}\,(\ldots)\). Le signe de f' est celui de la parenthèse.`,
+   R`Tableau de signes de f' → tableau de variation (avec les images aux bornes et à l'extremum).`,
+   R`Conclure en contexte avec unités.`]},
+  {t:'Équations',q:'« Résoudre… »',s:[
+   R`\(a^x=b\) → \(x=\frac{\ln b}{\ln a}\). \(e^{u}=b\) → \(u=\ln b\).`,
+   R`Même base des deux côtés : \(2^{x+1}=8^x=2^{3x}\) → égaler les exposants.`,
+   R`Logarithme : d'abord les <b>conditions d'existence</b> (argument > 0).`,
+   R`Regrouper : \(\log a+\log b=\log(ab)\) ; \(\log_ax=b\iff x=a^b\).`,
+   R`Rejeter les solutions hors CE.`]},
+  {t:'Modèle exponentiel (C14, population, intérêts)',q:'« demi-vie », « après combien de temps »',s:[
+   R`Modèle : \(N(t)=N_0e^{kt}\) ou \(N_0a^t\).`,
+   R`Trouver k avec une donnée (demi-vie T : \(k=-\frac{\ln2}T\)).`,
+   R`Résoudre \(N(t)=\ldots\) avec ln.`,
+   R`Phrase en contexte.`]},
+  {t:'Limites (l\'Hospital)',q:'Indétermination \(\frac00\) ou \(\frac\infty\infty\)',s:[
+   R`Vérifier que c'est bien \(\frac00\) ou \(\frac\infty\infty\).`,R`Dériver numérateur et dénominateur séparément : \(\lim\frac fg=\lim\frac{f'}{g'}\).`,R`Retenir : l'exponentielle l'emporte sur les puissances, qui l'emportent sur le ln.`]}
+ ],
+ pieges:[R`Oublier les conditions d'existence d'un log.`,R`\((e^{u})'=u'e^{u}\) : ne pas oublier \(u'\).`,R`\(\ln(a+b)\neq\ln a+\ln b\).`,R`L'Hospital : dériver séparément, pas la règle du quotient.`],
+ flash:[
+  [R`\((e^u)'\) ?`,R`\(u'e^u\)`],[R`\((\ln u)'\) ?`,R`\(\frac{u'}u\)`],[R`\((a^x)'\) ?`,R`\(a^x\ln a\)`],
+  [R`\(a^x=b\iff x=\)?`,R`\(\frac{\ln b}{\ln a}\)`],[R`\(\ln(ab)\), \(\ln\frac ab\), \(\ln a^n\) ?`,R`\(\ln a+\ln b\), \(\ln a-\ln b\), \(n\ln a\)`],
+  [R`Je vois un log dans une équation →`,R`Conditions d'existence d'abord (argument > 0)`],
+  [R`Je vois \((ax+b)e^{kx}\) et on demande f' →`,R`Produit, puis mettre \(e^{kx}\) en évidence ; signe = signe de la parenthèse`],
+  [R`Demi-vie T → k ?`,R`\(N=N_0e^{-kt}\) avec \(k=\frac{\ln2}T\)`],
+  [R`Qui l'emporte en \(+\infty\) : \(e^x\), \(x^3\), \(\ln x\) ?`,R`\(e^x\gg x^3\gg\ln x\)`],
+  [R`Règle de l'Hospital ?`,R`\(\frac00\) ou \(\frac\infty\infty\) : \(\lim\frac fg=\lim\frac{f'}{g'}\)`],
+  [R`Deux sources de 60 dB ensemble ?`,R`\(60+10\log2\approx63\) dB (pas 120)`]
+ ],
+ ex:[
+  {id:'e91',src:'Examen jury mars 2024',pts:8,t:'Bénéfice d\'une carrière',fig:'q9',
+   e:R`Le bénéfice (millions €) est \(f(x)=(2x-30)e^{-0{,}1x}\), x = tonnes extraites, \(x\in[1;70]\). 1) Résoudre f(x) > 0 et interpréter. 2) Tableau de signes de f'. 3) Tableau de variation. 4) Quantité pour un bénéfice maximum, et ce maximum.`,
+   s:[[1,R`1) \(e^{-0{,}1x}>0\), donc \(f>0\iff2x-30>0\iff x>15\). L'entreprise est bénéficiaire au-delà de 15 tonnes.`],[2,R`2) \(f'=2e^{-0{,}1x}+(2x-30)(-0{,}1)e^{-0{,}1x}\).`],[3,R`\(f'=e^{-0{,}1x}(2-0{,}2x+3)=e^{-0{,}1x}(5-0{,}2x)\) → zéro en \(x=25\) ; + sur [1 ; 25[, − sur ]25 ; 70].`],[4,R`3) f croît sur [1 ; 25] de \(f(1)\approx-25{,}34\) à \(f(25)\), puis décroît jusqu'à \(f(70)\approx0{,}10\).`],[5,R`4) \(f(25)=20e^{-2{,}5}\approx1{,}64\) : bénéfice max de 1,64 million € pour 25 tonnes.`]],
+   r:R`f > 0 pour <b>x > 15</b> ; max en <b>x = 25 t</b> : <b>≈ 1,64 M€</b>.`},
+  {id:'e92',src:'Entraînement',pts:5,t:'Équations',
+   e:R`a) \(3^x=20\) b) \(e^{2x-1}=5\) c) \(2^{x+1}=8^x\) d) \(\ln(x-2)=1\) e) \(\log x+\log(x-3)=1\)`,
+   s:[[1,R`a) \(x=\frac{\ln20}{\ln3}\approx2{,}73\). b) \(2x-1=\ln5\Rightarrow x=\frac{\ln5+1}2\approx1{,}30\).`],[2,R`c) \(2^{x+1}=2^{3x}\Rightarrow x+1=3x\Rightarrow x=\frac12\).`],[4,R`d) CE : x > 2. \(x-2=e\Rightarrow x=2+e\approx4{,}72\).`],[4,R`e) CE : x > 3. \(\log(x(x-3))=1\Rightarrow x^2-3x-10=0\Rightarrow x=5\) ou \(x=-2\) (rejeté).`]],
+   r:R`<b>2,73 ; 1,30 ; 0,5 ; 4,72 ; 5</b>`},
+  {id:'e93',src:'Entraînement',pts:4,t:'Dérivées exp/ln',
+   e:R`Dériver : a) \(xe^{-x}\) b) \(\ln(x^2+1)\) c) \(e^{3x^2}\) d) \(x\ln x\)`,
+   s:[[0,R`a) \(e^{-x}-xe^{-x}=e^{-x}(1-x)\)`],[0,R`b) \(\frac{2x}{x^2+1}\)`],[0,R`c) \(6x\,e^{3x^2}\)`],[0,R`d) \(\ln x+x\cdot\frac1x=\ln x+1\)`]],
+   r:R`Voir étapes.`},
+  {id:'e94',src:'Entraînement',pts:4,t:'Limites',
+   e:R`a) \(\lim_{x\to+\infty}\frac{e^x}{x^2}\) b) \(\lim_{x\to0}\frac{e^x-1}x\) c) \(\lim_{x\to+\infty}\frac{\ln x}x\) d) \(\lim_{x\to0}\frac{\ln(1+2x)}x\)`,
+   s:[[4,R`a) \(\frac\infty\infty\) : l'Hospital deux fois → \(\frac{e^x}{2}\to+\infty\).`],[4,R`b) \(\frac00\) → \(\frac{e^x}1\to1\).`],[4,R`c) \(\frac{1/x}{1}\to0\). d) \(\frac{2/(1+2x)}{1}\to2\).`]],
+   r:R`<b>+∞ ; 1 ; 0 ; 2</b>`},
+  {id:'e95',src:'Entraînement',pts:4,t:'Datation au carbone 14',
+   e:R`Demi-vie du C14 : 5 730 ans. Un os contient 30 % du C14 initial. Son âge ?`,
+   s:[[2,R`\(N=N_0e^{-kt}\), \(k=\frac{\ln2}{5730}\approx1{,}2097\cdot10^{-4}\).`],[3,R`\(0{,}3=e^{-kt}\Rightarrow t=\frac{\ln(1/0{,}3)}k\approx9\,953\) ans.`]],
+   r:R`<b>≈ 9 950 ans</b>`},
+  {id:'e96',src:'Entraînement',pts:3,t:'Population',
+   e:R`Une ville de 12 000 habitants grandit de 2,5 % par an. Quand dépassera-t-elle 20 000 ?`,
+   s:[[1,R`\(P(t)=12000\cdot1{,}025^t\).`],[3,R`\(1{,}025^t>\frac53\Rightarrow t>\frac{\ln(5/3)}{\ln1{,}025}\approx20{,}69\).`]],
+   r:R`Après <b>21 ans</b>.`},
+  {id:'e97',src:'Entraînement',pts:3,t:'Repère semi-logarithmique',
+   e:R`Dans un repère semi-log (axe y logarithmique), des données sont alignées et passent par (0 ; 100) et (5 ; 3 200). Modèle ?`,
+   s:[[1,R`Alignement en semi-log → modèle exponentiel \(y=100\cdot a^x\).`],[2,R`\(100a^5=3200\Rightarrow a^5=32\Rightarrow a=2\).`]],
+   r:R`<b>\(y=100\cdot2^x\)</b>`}
+ ]},
+
+{id:'c10',code:'6GUAA5',nom:'Géométrie analytique de l\'espace',pts:11,min:45,
+ tombe:'Un cube de côté 1 dans le repère (A, AB, AD, AE) : coordonnées, équation cartésienne d\'un plan par 3 points, droite orthogonale au plan, point d\'intersection. Aussi : alignement, coplanarité, positions relatives, systèmes 3×3.',
+ recettes:[
+  {t:'Coordonnées dans un cube',q:'« Dans le repère (A, AB, AD, AE) »',s:[
+   R`A = (0;0;0). AB donne l'axe x, AD l'axe y, AE l'axe z.`,
+   R`B(1;0;0), D(0;1;0), E(0;0;1), C(1;1;0), F(1;0;1), H(0;1;1), G(1;1;1).`,
+   R`Milieu : moyenne des coordonnées.`]},
+  {t:'Équation cartésienne d\'un plan par 3 points',q:'« Déterminer une équation cartésienne du plan PQR »',s:[
+   R`Deux vecteurs du plan : \(\vec{PQ}\) et \(\vec{PR}\) (arrivée − départ).`,
+   R`Vecteur normal \(\vec n(a;b;c)\) orthogonal aux deux : \(a u_1+b u_2+c u_3=0\) et \(a v_1+b v_2+c v_3=0\).`,
+   R`Résoudre en exprimant a et b en fonction de c, puis choisir une valeur simple de c.`,
+   R`Plan : \(ax+by+cz=d\), d en remplaçant par P.`,
+   R`Vérifier avec Q et R.`]},
+  {t:'Droite orthogonale à un plan + point de percée',q:'« droite passant par F orthogonale au plan », « intersection »',s:[
+   R`Vecteur directeur de la droite = vecteur normal du plan \((a;b;c)\).`,
+   R`Paramétriques : \(x=x_F+ka,\ y=y_F+kb,\ z=z_F+kc\).`,
+   R`Remplacer x, y, z dans l'équation du plan → trouver k.`,
+   R`Remettre k dans les paramétriques → coordonnées du point.`,
+   R`Vérifier que le point satisfait l'équation du plan.`]},
+  {t:'Positions relatives et systèmes',q:'« parallèles ? », « intersection de trois plans »',s:[
+   R`Deux plans : normaux proportionnels → parallèles (confondus si équations proportionnelles). Sinon sécants en une droite.`,
+   R`Deux droites : vecteurs directeurs proportionnels → parallèles. Sinon, résoudre le système : un point → sécantes ; aucun → gauches.`,
+   R`Trois plans : système 3×3 (substitution ou Gauss) → un point / une droite / aucun point.`,
+   R`Alignement de A, B, C : \(\vec{AC}=k\vec{AB}\). Coplanarité de A, B, C, D : \(\vec{AD}=\alpha\vec{AB}+\beta\vec{AC}\). Orthogonalité : \(u_1v_1+u_2v_2+u_3v_3=0\).`]}
+ ],
+ pieges:[R`Vecteur = arrivée − départ (pas l'inverse, sinon tout le signe change).`,R`Le vecteur normal se lit directement dans \(ax+by+cz=d\).`,R`Un seul paramètre k pour une droite, deux (k, l) pour un plan.`,R`Toujours vérifier le point trouvé dans l'équation.`],
+ flash:[
+  [R`Coordonnées de G dans le cube (A, AB, AD, AE) de côté 1 ?`,R`(1 ; 1 ; 1)`],[R`Coordonnées de F ?`,R`(1 ; 0 ; 1)`],
+  [R`Vecteur normal du plan \(2x-y+z=2\) ?`,R`(2 ; −1 ; 1)`],[R`Deux vecteurs orthogonaux ⟺`,R`\(u_1v_1+u_2v_2+u_3v_3=0\)`],
+  [R`Je cherche un plan par 3 points →`,R`2 vecteurs, normal orthogonal aux deux, \(ax+by+cz=d\), d avec un point`],
+  [R`Droite orthogonale à un plan →`,R`Vecteur directeur = vecteur normal du plan`],
+  [R`Point de percée droite/plan →`,R`Paramétriques dans l'équation du plan → k → point`],
+  [R`Distance entre A et B ?`,R`\(\sqrt{(x_B-x_A)^2+(y_B-y_A)^2+(z_B-z_A)^2}\)`],
+  [R`Trois points alignés ⟺`,R`\(\vec{AC}=k\vec{AB}\)`],[R`Deux plans parallèles ⟺`,R`Vecteurs normaux proportionnels`]
+ ],
+ ex:[
+  {id:'e101',src:'Examen jury mars 2024',pts:11,t:'Le cube et le plan BGI',fig:'cube',
+   e:R`Cube ABCDEFGH de côté 1, I milieu de [EF], repère \((A,\vec{AB},\vec{AD},\vec{AE})\). 1) Coordonnées de B, G, I, F. 2) Équation cartésienne du plan BGI. 3) Équations paramétriques de la droite d passant par F et orthogonale au plan BGI. 4) Intersection de d et du plan BGI.`,
+   s:[[1,R`1) B(1;0;0), G(1;1;1), F(1;0;1), E(0;0;1) → I\(\left(\frac12;0;1\right)\).`],[2,R`2) \(\vec{BG}=(0;1;1)\), \(\vec{BI}=\left(-\frac12;0;1\right)\).`],[3,R`\(\vec n(a;b;c)\) : \(b+c=0\) et \(-\frac12a+c=0\) → \(c=\frac a2\), \(b=-\frac a2\). Avec a = 2 : \(\vec n(2;-1;1)\).`],[4,R`\(2x-y+z=d\) ; avec B : d = 2 → <b>\(2x-y+z=2\)</b>. Vérif G : 2 − 1 + 1 = 2 ✓ ; I : 1 + 1 = 2 ✓.`],[3,R`3) Direction \((2;-1;1)\) : \(x=1+2k,\ y=-k,\ z=1+k\).`],[3,R`4) \(2(1+2k)+k+(1+k)=2\iff3+6k=2\iff k=-\frac16\).`],[4,R`Point \(\left(\frac23;\frac16;\frac56\right)\). Vérif : \(\frac43-\frac16+\frac56=2\) ✓.`]],
+   r:R`\(2x-y+z=2\) ; d : \((1+2k;-k;1+k)\) ; intersection <b>\(\left(\frac23;\frac16;\frac56\right)\)</b>.`},
+  {id:'e102',src:'Entraînement',pts:2,t:'Alignement et distance',
+   e:R`A(1;2;−1), B(3;0;1), C(5;−2;3). Alignés ? Distance AB ?`,
+   s:[[4,R`\(\vec{AB}=(2;-2;2)\), \(\vec{AC}=(4;-4;4)=2\vec{AB}\) → alignés.`],[4,R`\(AB=\sqrt{4+4+4}=2\sqrt3\approx3{,}46\).`]],
+   r:R`<b>Alignés ; 3,46</b>`},
+  {id:'e103',src:'Entraînement',pts:3,t:'Plan par ses traces',
+   e:R`Plan passant par A(1;0;0), B(0;2;0), C(0;0;3).`,
+   s:[[2,R`\(\vec{AB}=(-1;2;0)\), \(\vec{AC}=(-1;0;3)\).`],[3,R`\(-a+2b=0\), \(-a+3c=0\) → \(b=\frac a2\), \(c=\frac a3\). Avec a = 6 : (6 ; 3 ; 2).`],[4,R`\(6x+3y+2z=6\) (avec A). Vérif B : 6 ✓, C : 6 ✓.`]],
+   r:R`<b>\(6x+3y+2z=6\)</b>`},
+  {id:'e104',src:'Entraînement',pts:3,t:'Point de percée',
+   e:R`Droite passant par P(1;−1;2) de vecteur directeur (2;1;−1). Intersection avec le plan \(x+y+z=6\).`,
+   s:[[2,R`\(x=1+2k,\ y=-1+k,\ z=2-k\).`],[3,R`\(1+2k-1+k+2-k=6\iff2+2k=6\iff k=2\).`],[4,R`Point (5 ; 1 ; 0). Vérif : 6 ✓.`]],
+   r:R`<b>(5 ; 1 ; 0)</b>`},
+  {id:'e105',src:'Entraînement',pts:2,t:'Deux plans',
+   e:R`Position relative de \(2x-y+3z=1\) et \(-4x+2y-6z=5\).`,
+   s:[[4,R`Normaux (2;−1;3) et (−4;2;−6) = −2 × le premier → parallèles.`],[4,R`Équation : \(-2\times1=-2\neq5\) → pas confondus.`]],
+   r:R`<b>Parallèles distincts</b>`},
+  {id:'e106',src:'Entraînement',pts:3,t:'Trois plans',
+   e:R`Résoudre \(\begin{cases}x+y+z=6\\x-y+2z=5\\2x+y-z=1\end{cases}\) et interpréter.`,
+   s:[[4,R`(1) + (2) : \(2x+3z=11\). (2) + (3) : \(3x+z=6\Rightarrow z=6-3x\).`],[4,R`\(2x+3(6-3x)=11\Rightarrow-7x=-7\Rightarrow x=1\), \(z=3\), puis \(y=6-1-3=2\).`],[4,R`Une seule solution → les trois plans se coupent en un point.`]],
+   r:R`<b>Point (1 ; 2 ; 3)</b>`},
+  {id:'e107',src:'Entraînement',pts:2,t:'Orthogonalité et coplanarité',
+   e:R`a) \(\vec u(1;2;-1)\) et \(\vec v(3;-1;1)\) orthogonaux ? b) A(0;0;0), B(1;0;1), C(0;1;1), D(1;1;2) coplanaires ?`,
+   s:[[4,R`a) \(3-2-1=0\) → orthogonaux.`],[4,R`b) \(\vec{AD}=(1;1;2)=\vec{AB}+\vec{AC}\) → coplanaires.`]],
+   r:R`<b>Oui ; oui</b>`},
+  {id:'e108',src:'Entraînement',pts:3,t:'Problème → système',
+   e:R`100 billets vendus pour 840 € : adultes 12 €, enfants 5 €, seniors 8 €. Il y a deux fois plus d'enfants que de seniors. Combien de chaque ?`,
+   s:[[4,R`\(a+c+s=100\) ; \(12a+5c+8s=840\) ; \(c=2s\).`],[4,R`\(a=100-3s\) ; \(12(100-3s)+10s+8s=840\iff1200-18s=840\iff s=20\).`],[4,R`\(c=40\), \(a=40\).`]],
+   r:R`<b>40 adultes, 40 enfants, 20 seniors</b>`}
+ ]}
+];
+
+/* ---------- Examen blanc ---------- */
+const BLANC=[
+ {ch:'c1',pts:7,t:'Statistiques',e:R`Ventes (milliers €) d'un magasin, mois 1 à 5 : 12 ; 15 ; 19 ; 22 ; 26. Calculer r, la droite des moindres carrés et estimer les ventes du mois 7.`,
+  s:[R`\(\sum x=15,\ \sum y=94,\ \sum x^2=55,\ \sum y^2=1890,\ \sum xy=317\) ; \(\bar x=3\), \(\bar y=18{,}8\).`,R`\(\sigma_x^2=11-9=2\) ; \(\sigma_y^2=378-353{,}44=24{,}56\) ; cov \(=63{,}4-56{,}4=7\).`,R`\(r=\frac{7}{\sqrt2\cdot\sqrt{24{,}56}}\approx1{,}00\) (0,9988).`,R`\(y-18{,}8=\frac72(x-3)\iff y=3{,}5x+8{,}3\) ; mois 7 : 32,8.`],r:R`r ≈ 0,999 ; y = 3,5x + 8,3 ; <b>32,8 milliers €</b>`},
+ {ch:'c2',pts:10,t:'Suites et maths financières',e:R`a) 8 000 € à 2,4 % par an (composés) : taux mensuel équivalent ; capital après 6 ans ; après combien d'années dépasse-t-il 10 000 € ? b) Un cinéma a 18 sièges au 1er rang, puis 2 de plus à chaque rang, sur 25 rangs. Nombre total de sièges ?`,
+  s:[R`\(i_m=1{,}024^{1/12}-1\approx0{,}00198\).`,R`\(8000\cdot1{,}024^6\approx9\,223{,}37\) €.`,R`\(1{,}024^n>1{,}25\Rightarrow n>\frac{\ln1{,}25}{\ln1{,}024}\approx9{,}41\) → 10 ans.`,R`b) Arithmétique : \(u_{25}=18+24\cdot2=66\) ; \(S=25\cdot\frac{18+66}2=1050\).`],r:R`0,198 % ; 9 223,37 € ; <b>10 ans</b> ; <b>1 050 sièges</b>`},
+ {ch:'c3',pts:11,t:'Asymptotes et limites',e:R`a) Trouver a et b pour que \(f(x)=\frac{ax^2+1}{x^2+bx}\) ait une AH \(y=2\) et une AV \(x=3\). Donner toutes ses AV et les limites autour de x = 3. b) \(\lim_{x\to-2}\frac{x^2-4}{x+2}\).`,
+  s:[R`AH : \(\frac a1=2\Rightarrow a=2\). AV en 3 : \(9+3b=0\Rightarrow b=-3\). Numérateur en 3 : 19 ≠ 0 ✓.`,R`\(x^2-3x=x(x-3)\) → AV \(x=0\) aussi (numérateur 1 ≠ 0).`,R`\(x\to3^+\) : \(\frac{19}{0^+}=+\infty\) ; \(x\to3^-\) : \(-\infty\).`,R`b) \(\frac00\) : \(\frac{(x-2)(x+2)}{x+2}=x-2\to-4\).`],r:R`<b>a = 2, b = −3</b> ; AV x = 0 et x = 3 ; <b>−4</b>`},
+ {ch:'c4',pts:10,t:'Dérivées',e:R`\(f(x)=x^3-6x^2+9x+1\). a) Tableau de variation. b) Tangentes parallèles à \(y=-3x+2\) ? Équation. c) Point d'inflexion.`,
+  s:[R`\(f'=3x^2-12x+9=3(x-1)(x-3)\) : max (1 ; 5), min (3 ; 1).`,R`\(f'(x)=-3\iff x^2-4x+4=0\iff x=2\) ; f(2) = 3 → \(y=-3(x-2)+3=-3x+9\).`,R`\(f''=6x-12\) change de signe en 2 → inflexion (2 ; 3).`],r:R`Max (1 ; 5), min (3 ; 1) ; une tangente <b>y = −3x + 9</b> ; inflexion <b>(2 ; 3)</b>`},
+ {ch:'c5',pts:7,t:'Trigonométrie',fig:'b5',e:R`\(f(x)=3\cos(2x)+1\). a) Période, max, min. b) Résoudre f(x) = 1 sur [0 ; π].`,
+  s:[R`Période \(\frac{2\pi}2=\pi\) ; max 4 en \(x=k\pi\) ; min −2 en \(x=\frac\pi2+k\pi\).`,R`\(\cos2x=0\Rightarrow2x=\frac\pi2+k\pi\Rightarrow x=\frac\pi4+\frac{k\pi}2\).`],r:R`π ; 4 ; −2 ; <b>\(x=\frac\pi4\) et \(\frac{3\pi}4\)</b>`},
+ {ch:'c6',pts:10,t:'Probabilités',e:R`Une machine M1 fait 60 % des pièces (3 % défectueuses), M2 en fait 40 % (5 % défectueuses). a) P(défectueuse). b) Une pièce est défectueuse : P(elle vient de M2) ? c) « M1 » et « défectueuse » indépendants ? d) Code de 3 lettres distinctes parmi 26 : combien ? P(aucune voyelle) avec 6 voyelles ?`,
+  s:[R`a) \(0{,}6\cdot0{,}03+0{,}4\cdot0{,}05=0{,}038\).`,R`b) \(\frac{0{,}02}{0{,}038}\approx0{,}53\).`,R`c) \(P(M1\cap D)=0{,}018\neq0{,}6\cdot0{,}038=0{,}0228\) → non.`,R`d) \(26\cdot25\cdot24=15\,600\) ; \(\frac{20\cdot19\cdot18}{15600}\approx0{,}44\).`],r:R`<b>0,038 ; 0,53 ; non ; 15 600 et 0,44</b>`},
+ {ch:'c7',pts:14,t:'Lois de probabilités',e:R`a) Mise 3 € ; urne 5 rouges, 3 vertes, 2 noires. Rouge : rien ; verte : on reçoit 5 € ; noire : 10 €. Espérance et écart-type du gain net. b) 20 % des clients paient en liquide. Sur 8 clients : P(exactement 2), P(au moins 1), E. c) Trajet \(\sim N(40;5)\) min : P(> 50 min), P(35 < X < 45), durée t telle que 90 % des trajets durent moins.`,
+  s:[R`a) Gains −3 (0,5), +2 (0,3), +7 (0,2) : E = −1,5 + 0,6 + 1,4 = 0,5 € ; V = 4,5 + 1,2 + 9,8 − 0,25 = 15,25 → σ ≈ 3,91.`,R`b) \(B(8;0{,}2)\) : \(C_8^2\,0{,}2^2\,0{,}8^6\approx0{,}29\) ; \(1-0{,}8^8\approx0{,}83\) ; E = 1,6.`,R`c) z = 2 → 0,0228 ; z = ±1 → 0,6826 ; \(40+1{,}28\cdot5=46{,}4\) min.`],r:R`<b>0,50 € ; 3,91 ; 0,29 ; 0,83 ; 1,6 ; 0,0228 ; 0,6826 ; 46,4 min</b>`},
+ {ch:'c8',pts:12,t:'Intégrales',e:R`a) \(\int\left(3x^2-\frac4x+e^x\right)dx\) b) \(\int xe^{2x}dx\) c) \(\int\sin(2x-1)dx\) d) \(\int_0^1\frac{2x+1}{x^2+x+1}dx\) e) Aire entre \(y=x\) et \(y=x^2\).`,
+  s:[R`a) \(x^3-4\ln|x|+e^x+C\).`,R`b) Parties (u = x, v' = \(e^{2x}\), v = \(\frac{e^{2x}}2\)) : \(\frac x2e^{2x}-\frac14e^{2x}+C\).`,R`c) \(-\frac12\cos(2x-1)+C\).`,R`d) Forme \(\frac{u'}u\) : \([\ln(x^2+x+1)]_0^1=\ln3\approx1{,}10\).`,R`e) Intersections 0 et 1, \(\int_0^1(x-x^2)dx=\frac12-\frac13=\frac16\).`],r:R`d) <b>ln 3 ≈ 1,10</b> ; e) <b>\(\frac16\approx0{,}17\)</b>`},
+ {ch:'c9',pts:8,t:'Exponentielles et logarithmes',e:R`Concentration d'un médicament : \(C(t)=20te^{-0{,}5t}\) (mg/L), t en heures. a) C'(t) et son signe. b) Concentration maximale. c) \(\lim_{t\to+\infty}C(t)\). d) Résoudre \(5e^{0{,}2t}=20\).`,
+  s:[R`a) \(C'=20e^{-0{,}5t}+20t(-0{,}5)e^{-0{,}5t}=20e^{-0{,}5t}(1-0{,}5t)\) : + avant 2, − après.`,R`b) \(C(2)=40e^{-1}\approx14{,}72\) mg/L à t = 2 h.`,R`c) L'exponentielle l'emporte → 0.`,R`d) \(e^{0{,}2t}=4\Rightarrow t=5\ln4\approx6{,}93\).`],r:R`<b>Max 14,72 mg/L à 2 h ; limite 0 ; t ≈ 6,93</b>`},
+ {ch:'c10',pts:11,t:'Géométrie de l\'espace',e:R`A(1;0;2), B(3;1;0), C(0;2;1), D(4;4;4). a) Équation du plan ABC. b) Droite passant par D orthogonale au plan. c) Point d'intersection H. d) Distance DH.`,
+  s:[R`\(\vec{AB}=(2;1;-2)\), \(\vec{AC}=(-1;2;-1)\) → \(\vec n(3;4;5)\) (vérif : 6 + 4 − 10 = 0 ; −3 + 8 − 5 = 0).`,R`\(3x+4y+5z=13\) (avec A ; vérif B et C ✓).`,R`\(x=4+3k,\ y=4+4k,\ z=4+5k\) → \(48+50k=13\Rightarrow k=-0{,}7\) → H(1,9 ; 1,2 ; 0,5).`,R`\(DH=\sqrt{2{,}1^2+2{,}8^2+3{,}5^2}=\sqrt{24{,}5}\approx4{,}95\).`],r:R`<b>3x + 4y + 5z = 13 ; H(1,9 ; 1,2 ; 0,5) ; DH ≈ 4,95</b>`}
+];
+
+/* ---------- État ---------- */
+const KEY='mathsJuryCESS_v1';
+let S={ex:{},fl:{},plan:{},blanc:{},view:'home',tab:'rec',t0:null};
+try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v)S=Object.assign(S,v)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const reveal={};
+let flashQ=null;
+
+const chOf=id=>CH.find(c=>c.id===id);
+function mastery(c){
+  const ex=c.ex.map(e=>({ok:1,mid:.5,ko:0}[S.ex[e.id]]??0));
+  const fl=c.flash.map((f,i)=>S.fl[c.id+'_'+i]===1?1:0);
+  return Math.round(100*(0.65*ex.reduce((a,b)=>a+b,0)/ex.length+0.35*fl.reduce((a,b)=>a+b,0)/fl.length));
+}
+
+/* ---------- Rendu ---------- */
+const $=s=>document.querySelector(s);
+// « < » et « > » dans une formule seraient lus comme des balises HTML
+const mathSafe=h=>h.replace(/\\\([\s\S]*?\\\)|\\\[[\s\S]*?\\\]/g,m=>m.replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+function typeset(el){if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetPromise([el]).catch(()=>{})}}
+function fillFigs(el){el.querySelectorAll('[data-plot]').forEach(d=>{const f=PLOTS[d.dataset.plot];if(f)d.innerHTML=f()})}
+
+function rail(){
+  let h=`<div class="brand">Maths · Jury CESS<small>Mathématiques générales 4 h — examen écrit 3 h</small></div><div class="sep"></div>`;
+  h+=`<button class="nav ${S.view==='home'?'on':''}" data-go="home"><span class="n">⌂</span>Plan de la journée</button>`;
+  CH.forEach((c,i)=>{const m=mastery(c);h+=`<button class="nav ${S.view===c.id?'on':''}" data-go="${c.id}"><span class="n">Q${i+1}</span>${c.nom}<span class="bar" title="${m} %"><i style="width:${m}%"></i></span></button>`});
+  h+=`<div class="sep"></div>`;
+  h+=`<button class="nav ${S.view==='flashall'?'on':''}" data-go="flashall"><span class="n">↻</span>Réflexes : tout mélanger</button>`;
+  h+=`<button class="nav ${S.view==='revoir'?'on':''}" data-go="revoir"><span class="n">!</span>À revoir</button>`;
+  h+=`<button class="nav ${S.view==='blanc'?'on':''}" data-go="blanc"><span class="n">⏱</span>Examen blanc</button>`;
+  h+=`<button class="nav ${S.view==='form'?'on':''}" data-go="form"><span class="n">∑</span>Formulaire + table</button>`;
+  $('#rail').innerHTML=h;
+}
+
+function render(){
+  rail();
+  const app=$('#app');
+  let h='';
+  if(S.view==='home')h=viewHome();
+  else if(S.view==='blanc')h=viewBlanc();
+  else if(S.view==='form')h=viewForm();
+  else if(S.view==='revoir')h=viewRevoir();
+  else if(S.view==='flashall')h=viewFlash(null);
+  else h=viewChapter(chOf(S.view));
+  app.innerHTML=`<div class="fade">${mathSafe(h)}</div>`;
+  fillFigs(app);typeset(app);
+  if(S.view==='blanc')tick();
+}
+
+function viewHome(){
+  const tot=Math.round(CH.reduce((a,c)=>a+mastery(c)*c.pts,0)/100);
+  const doneEx=Object.keys(S.ex).length, allEx=CH.reduce((a,c)=>a+c.ex.length,0);
+  const weakest=[...CH].sort((a,b)=>(mastery(a)-mastery(b))||(b.pts-a.pts))[0];
+  let h=`<div class="eyebrow">Examen demain · 10 questions · 1 par chapitre</div><h1>Ta journée de révision</h1>
+  <p class="lead">Pour chaque chapitre : 1) lis les <b>recettes</b>, 2) fais les <b>exercices</b> en appliquant la recette, 3) boucle les <b>réflexes</b> jusqu'à tout savoir. Les points indiqués sont ceux de l'examen officiel de mars 2024.</p>
+  <div class="kpis" style="margin-top:18px">
+   <div class="kpi"><div class="v">${tot}/100</div><div class="l">Points maîtrisés (estimation)</div></div>
+   <div class="kpi"><div class="v">${doneEx}/${allEx}</div><div class="l">Exercices faits</div></div>
+   <div class="kpi"><div class="v" style="font-size:20px;line-height:1.3">${weakest.nom}</div><div class="l">Prochain chapitre conseillé</div></div>
+  </div>
+  <div class="row" style="margin-top:14px"><button class="btn pri" data-go="${weakest.id}">Continuer : ${weakest.nom}</button><button class="btn" data-go="flashall">Réflexes mélangés</button></div>
+  <h2>Plan de 8 h</h2>
+  <ul class="plan">`;
+  let t=0;const items=[['p0',15,'Lire « Le jour J » ci-dessous et le formulaire',null]].concat(CH.map(c=>[c.id,c.min,`Q${CH.indexOf(c)+1} · ${c.nom}`,c])).concat([['pb',60,'Examen blanc : les questions des chapitres les plus faibles',null],['pp',25,'Pauses (5 min toutes les heures)',null]]);
+  items.forEach(([id,m,l,c])=>{const hh=Math.floor(t/60),mm=t%60;h+=`<li><input type="checkbox" id="pl_${id}" data-plan="${id}" ${S.plan[id]?'checked':''}><span class="t">+${hh}h${String(mm).padStart(2,'0')}</span><span class="${S.plan[id]?'done':''}">${l}${c?` <span class="chip">${c.pts} pts</span>`:''}</span><span>${c?`<button class="btn" data-go="${c.id}">${mastery(c)} %</button>`:id==='pb'?'<button class="btn" data-go="blanc">Ouvrir</button>':id==='p0'?'<button class="btn" data-go="form">Formulaire</button>':''}</span></li>`;t+=m});
+  h+=`</ul>
+  <h2>Le jour J (consignes officielles 2026-2027/1)</h2>
+  <div class="paper stack">
+   <ul>
+    <li><b>Écrit, 3 h maximum</b>, 10 questions, une par chapitre. ≈ 18 min par question : commence par celles que tu maîtrises.</li>
+    <li><b>Le formulaire est joint</b> à ton examen (il ne disparaît qu'à partir du cycle 2026-2027/2). Mais les dérivées, les primitives et les valeurs trigo ne sont <b>pas</b> dessus.</li>
+    <li><b>Résultats au centième</b>.</li>
+    <li><b>Justifier chaque étape</b> (phrase ou calcul détaillé), sinon la réponse n'est pas corrigée. Même avec la calculatrice : écris la méthode.</li>
+    <li>Réponses dans les <b>cadres prévus</b> ; le verso et le brouillon ne sont pas corrigés.</li>
+    <li>Calculatrice <b>non graphique, non programmable</b> (TI-30XB, Casio FX-92B, fx-220…), latte, équerre, rapporteur, compas, trousse transparente. Pas de Tipp-Ex, pas de couleurs, pas de crayon (sauf constructions).</li>
+    <li>Calculatrice : <b>mode RAD</b> pour la trigo.</li>
+    <li>Réussite (dispense) à partir de <b>50 %</b>.</li>
+   </ul>
+  </div>`;
+  return h;
+}
+
+function viewChapter(c){
+  const i=CH.indexOf(c);
+  let h=`<div class="eyebrow">Question ${i+1} · ${c.code} · ${c.pts} pts en 2024</div><h1>${c.nom}</h1>
+  <p class="lead"><b>Ce qui tombe :</b> ${c.tombe}</p>
+  <div class="row" style="margin-top:12px"><span class="chip">Maîtrise ${mastery(c)} %</span><span class="chip off">${c.ex.filter(e=>S.ex[e.id]).length}/${c.ex.length} exercices</span><span class="chip off">${c.flash.filter((f,k)=>S.fl[c.id+'_'+k]===1).length}/${c.flash.length} réflexes sus</span></div>
+  <div class="tabs" role="tablist">
+   ${[['rec','1. Recettes'],['ex','2. Exercices'],['fl','3. Réflexes']].map(([k,l])=>`<button class="tab ${S.tab===k?'on':''}" data-tab="${k}" role="tab">${l}</button>`).join('')}
+  </div>`;
+  if(S.tab==='rec'){
+    h+=`<div class="stack">`;
+    c.recettes.forEach((r,k)=>{h+=`<div class="paper recipe"><h3>Recette ${k+1} · ${r.t}</h3><p class="when">Quand : ${r.q}</p><ol class="steps">${r.s.map(x=>`<li><div>${x}</div></li>`).join('')}</ol></div>`});
+    h+=`<div class="trap"><b>Pièges qui coûtent des points</b><ul>${c.pieges.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
+    h+=`<div class="row"><button class="btn pri" data-tab="ex">Passer aux exercices →</button></div></div>`;
+  } else if(S.tab==='ex'){
+    h+=`<p class="muted" style="margin-top:0">Fais l'exercice au brouillon en suivant la recette. Bloqué ? Révèle <b>une étape</b> à la fois. À la fin, note-toi honnêtement.</p><div class="stack">`;
+    c.ex.forEach(e=>h+=exCard(e,c));
+    h+=`</div>`;
+  } else {
+    h+=viewFlash(c);
+  }
+  return h;
+}
+
+function exCard(e,c){
+  const n=reveal[e.id]||0, g=S.ex[e.id];
+  let h=`<div class="paper ex" id="ex_${e.id}"><div class="head"><span class="chip ${e.src.startsWith('Examen')?'':'off'}">${e.src}</span><h3>${e.t}</h3><span class="chip off">/${e.pts}</span>${g?`<span class="chip ${g}">${{ok:'Réussi',mid:'Hésitant',ko:'Raté'}[g]}</span>`:''}</div>
+   <div>${e.e}</div>`;
+  if(e.fig)h+=`<div class="fig" data-plot="${e.fig}"></div>`;
+  if(e.figs)h+=`<div class="figs">${e.figs.map(f=>`<div data-plot="${f}"></div>`).join('')}</div>`;
+  h+=`<div class="stepbox">`;
+  for(let k=0;k<Math.min(n,e.s.length);k++){const [ri,txt]=e.s[k];h+=`<div class="step"><span class="k">Étape ${k+1}${ri?` · recette ${ri}`:''}</span><div>${txt}</div></div>`}
+  if(n>e.s.length){h+=`<div class="answer"><b>Réponse :</b> ${e.r}</div>`;if(e.figR)h+=`<div class="fig" data-plot="${e.figR}"></div>`}
+  h+=`</div><div class="row">`;
+  if(n<e.s.length)h+=`<button class="btn" data-step="${e.id}">Étape suivante (${n+1}/${e.s.length})</button>`;
+  if(n<=e.s.length)h+=`<button class="btn ${n>=e.s.length?'pri':''}" data-all="${e.id}">${n>=e.s.length?'Voir la réponse':'Tout afficher'}</button>`;
+  h+=`<span style="flex:1"></span><span class="muted" style="font-size:14px">Je l'ai :</span>
+   <button class="btn ok" data-grade="${e.id}" data-g="ok">réussi</button><button class="btn mid" data-grade="${e.id}" data-g="mid">avec aide</button><button class="btn ko" data-grade="${e.id}" data-g="ko">raté</button></div></div>`;
+  return h;
+}
+
+function viewFlash(c){
+  const pool=c?c.flash.map((f,i)=>({c,i,f})):CH.flatMap(cc=>cc.flash.map((f,i)=>({c:cc,i,f})));
+  const sig=c?c.id:'all';
+  if(!flashQ||flashQ.sig!==sig){
+    const order=pool.slice().sort((a,b)=>(S.fl[a.c.id+'_'+a.i]===1)-(S.fl[b.c.id+'_'+b.i]===1)||Math.random()-.5);
+    flashQ={sig,q:order,shown:false,done:0,first:{}};
+  }
+  const known=pool.filter(p=>S.fl[p.c.id+'_'+p.i]===1).length;
+  let h=c?'':`<div class="eyebrow">Tous les chapitres</div><h1>Réflexes mélangés</h1><p class="lead">« Je vois ceci → je fais cela ». Dis la réponse dans ta tête (ou écris-la), puis retourne la carte. Une carte ratée revient 3 cartes plus loin.</p>`;
+  h+=`<div class="row" style="margin:${c?'0':'16px'} 0 12px"><span class="chip ok">${known}/${pool.length} sus</span><span class="chip off">${flashQ.q.length} dans la pile</span><button class="btn" data-flreset="1">Remélanger</button></div>`;
+  if(!flashQ.q.length){h+=`<div class="paper"><h3>Pile terminée</h3><p class="muted">Tout est passé. Remélange pour une nouvelle boucle, ou passe à un autre chapitre.</p></div>`;return h}
+  const cur=flashQ.q[0];
+  h+=`<div class="paper grid-bg flash"><div><div class="eyebrow">${cur.c.nom}</div><div class="q">${cur.f[0]}</div></div>`;
+  if(flashQ.shown)h+=`<div class="a">${cur.f[1]}</div><div class="row"><button class="btn ko" data-fl="0">À revoir</button><button class="btn ok" data-fl="1">Je savais</button></div>`;
+  else h+=`<div class="row"><button class="btn pri" data-flshow="1">Retourner la carte</button><span class="muted" style="font-size:14px">raccourci : espace</span></div>`;
+  h+=`</div>`;
+  return h;
+}
+
+function viewRevoir(){
+  const list=CH.flatMap(c=>c.ex.filter(e=>S.ex[e.id]==='ko'||S.ex[e.id]==='mid').map(e=>({c,e})));
+  let h=`<div class="eyebrow">Ta liste personnelle</div><h1>À revoir</h1><p class="lead">Les exercices notés « raté » ou « avec aide ». Refais-les sans regarder les étapes, puis note-toi à nouveau.</p><div class="stack" style="margin-top:16px">`;
+  if(!list.length)h+=`<div class="paper"><p class="muted" style="margin:0">Rien pour l'instant. Note tes exercices dans chaque chapitre : ceux que tu rates arrivent ici.</p></div>`;
+  list.forEach(({c,e})=>{h+=`<div class="eyebrow" style="margin-top:6px">${c.nom}</div>`+exCard(e,c)});
+  return h+`</div>`;
+}
+
+function viewBlanc(){
+  const done=BLANC.reduce((a,b,i)=>a+(({ok:1,mid:.5,ko:0})[S.blanc[i]]??0)*b.pts,0);
+  const graded=Object.keys(S.blanc).length;
+  let h=`<div class="eyebrow">Même structure que l'examen : 10 questions, 100 points</div><h1>Examen blanc</h1>
+  <p class="lead">Conditions réelles : brouillon, calculatrice non graphique, formulaire. Rédige comme le jour J (justifier chaque étape, centièmes). Corrige-toi ensuite question par question.</p>
+  <div class="row" style="margin:16px 0"><span class="timer" id="timer">3:00:00</span>
+   <button class="btn pri" id="tstart">${S.t0?'Relancer le chrono':'Démarrer le chrono 3 h'}</button>${S.t0?'<button class="btn" id="tstop">Arrêter</button>':''}
+   <span style="flex:1"></span><span class="chip ${graded?'ok':'off'}">Note estimée : ${graded?(done/5).toFixed(1).replace('.',','):'–'}/20 (${graded}/10 corrigées)</span></div>
+  <div class="stack">`;
+  BLANC.forEach((b,i)=>{const g=S.blanc[i];const open=reveal['b'+i];
+   h+=`<div class="paper ex"><div class="head"><span class="chip off">Q${i+1}</span><h3>${b.t}</h3><span class="chip off">/${b.pts}</span>${g?`<span class="chip ${g}">${{ok:'Réussi',mid:'Partiel',ko:'Raté'}[g]}</span>`:''}</div><div>${b.e}</div>${b.fig&&open?`<div class="fig" data-plot="${b.fig}"></div>`:''}`;
+   if(open)h+=`<div class="stepbox">${b.s.map((x,k)=>`<div class="step"><span class="k">Étape ${k+1}</span><div>${x}</div></div>`).join('')}<div class="answer"><b>Réponse :</b> ${b.r}</div></div>`;
+   h+=`<div class="row"><button class="btn" data-bopen="${i}">${open?'Masquer la correction':'Voir la correction'}</button><span style="flex:1"></span><button class="btn ok" data-bg="${i}" data-g="ok">tout bon</button><button class="btn mid" data-bg="${i}" data-g="mid">partiel</button><button class="btn ko" data-bg="${i}" data-g="ko">raté</button><button class="btn" data-go="${b.ch}">Chapitre</button></div></div>`});
+  return h+`</div>`;
+}
+let timerId=null;
+function tick(){clearInterval(timerId);const el=$('#timer');if(!el)return;const f=()=>{let left=3*3600;if(S.t0)left=Math.max(0,3*3600-Math.floor((Date.now()-S.t0)/1000));const hh=Math.floor(left/3600),mm=Math.floor(left%3600/60),ss=left%60;el.textContent=`${hh}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`};f();if(S.t0)timerId=setInterval(f,1000)}
+
+function phi(z){const t=1/(1+0.2316419*Math.abs(z));const d=0.3989422804014327*Math.exp(-z*z/2);let p=d*t*(0.319381530+t*(-0.356563782+t*(1.781477937+t*(-1.821255978+t*1.330274429))));return z>=0?1-p:p}
+function viewForm(){
+  let h=`<div class="eyebrow">Joint à ton examen (cycle 2026-2027/1)</div><h1>Formulaire + table</h1><p class="lead">Ce qui est sur le formulaire officiel, et ce que tu dois connaître par cœur.</p>
+  <h2>Sur le formulaire</h2><div class="paper tw"><table class="t">
+  <tr><th>Stat. 1 variable</th><td>\(\bar x=\frac{\sum n_ix_i}{n}\) ; \(V(X)=\sigma^2=\frac{\sum n_ix_i^2}{n}-\bar x^2\) ; \(\sigma=\sqrt{V}\)</td></tr>
+  <tr><th>Stat. 2 variables</th><td>\(\text{cov}(x,y)=\frac{\sum x_iy_i}{n}-\bar x\bar y\) ; \(r=\frac{\text{cov}(x,y)}{\sigma(x)\sigma(y)}\) ; \(y-\bar y=\frac{\text{cov}(x,y)}{\sigma(x)^2}(x-\bar x)\)</td></tr>
+  <tr><th>Maths financières</th><td>\(C_n=C_0(1+in)\) ; \(C_n=C_0(1+i)^n\) ; \((1+i_a)=(1+i_s)^2=(1+i_t)^4=(1+i_m)^{12}\) ; \(V_n=a\frac{(1+i)^n-1}{i}\) ; annuité \(=C\frac{(1+i)^n\,i}{(1+i)^n-1}\)</td></tr>
+  <tr><th>Lois de probabilités</th><td>\(E(X)=\sum x_ip_i\) ; \(V(X)=\sum p_ix_i^2-E(X)^2\) ; \(P(X=k)=C_n^kp^k(1-p)^{n-k}\) ; \(E=np\), \(V=npq\) ; table de la loi normale</td></tr>
+  </table></div>
+  <h2>À connaître par cœur (pas sur le formulaire)</h2><div class="paper tw"><table class="t">
+  <tr><th>Dérivées</th><td>\((x^n)'=nx^{n-1}\) ; \((\sqrt x)'=\frac1{2\sqrt x}\) ; \((uv)'=u'v+uv'\) ; \(\left(\frac uv\right)'=\frac{u'v-uv'}{v^2}\) ; \((u^n)'=nu^{n-1}u'\) ; \((\sin u)'=u'\cos u\) ; \((\cos u)'=-u'\sin u\) ; \((e^u)'=u'e^u\) ; \((\ln u)'=\frac{u'}u\)</td></tr>
+  <tr><th>Primitives</th><td>\(\int x^n=\frac{x^{n+1}}{n+1}\) ; \(\int\frac1x=\ln|x|\) ; \(\int e^x=e^x\) ; \(\int\cos=\sin\) ; \(\int\sin=-\cos\) ; \(\int f(ax+b)=\frac1aF(ax+b)\) ; parties \(\int uv'=uv-\int u'v\)</td></tr>
+  <tr><th>Suites</th><td>\(u_n=u_1+(n-1)r\) ; \(u_n=u_1q^{n-1}\) ; \(S=n\frac{\text{prem.}+\text{dern.}}2\) ; \(S=\text{prem.}\frac{1-q^n}{1-q}\)</td></tr>
+  <tr><th>Trigo</th><td>période \(\frac{2\pi}{|b|}\) ; \(\sin x=k\): \(\alpha+2k\pi,\ \pi-\alpha+2k\pi\) ; \(\cos x=k\): \(\pm\alpha+2k\pi\) ; \(\tan x=k\): \(\alpha+k\pi\)</td></tr>
+  <tr><th>Valeurs</th><td>\(\sin\): 0, \(\frac12\), \(\frac{\sqrt2}2\), \(\frac{\sqrt3}2\), 1 · \(\cos\): 1, \(\frac{\sqrt3}2\), \(\frac{\sqrt2}2\), \(\frac12\), 0 (pour 0, \(\frac\pi6\), \(\frac\pi4\), \(\frac\pi3\), \(\frac\pi2\))</td></tr>
+  <tr><th>Probas</th><td>\(P(A\cup B)=P(A)+P(B)-P(A\cap B)\) ; \(P(B|A)=\frac{P(A\cap B)}{P(A)}\) ; indép. \(P(A\cap B)=P(A)P(B)\) ; \(C_n^p=\frac{n!}{p!(n-p)!}\)</td></tr>
+  <tr><th>Loi normale</th><td>\(z=\frac{x-\mu}\sigma\) ; \(P(X>a)=1-\Phi(z)\) ; \(\Phi(-z)=1-\Phi(z)\) ; 68 / 95 / 99,7 %</td></tr>
+  <tr><th>Espace</th><td>normal de \(ax+by+cz=d\) : \((a;b;c)\) ; orthogonaux : \(u_1v_1+u_2v_2+u_3v_3=0\) ; distance \(\sqrt{\Delta x^2+\Delta y^2+\Delta z^2}\)</td></tr>
+  </table></div>
+  <h2>Table de la loi normale \(\Phi(z)=P(Z\le z)\)</h2><div class="paper tw"><table class="t ntab"><tr><th>z</th>${[0,1,2,3,4,5,6,7,8,9].map(j=>`<th>0,0${j}</th>`).join('')}</tr>`;
+  for(let i=0;i<=39;i++){h+=`<tr><th>${(i/10).toFixed(1).replace('.',',')}</th>`;for(let j=0;j<10;j++)h+=`<td>${phi(i/10+j/100).toFixed(4).replace('.',',')}</td>`;h+=`</tr>`}
+  return h+`</table></div>`;
+}
+
+/* ---------- Événements ---------- */
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('button,input');if(!b)return;const d=b.dataset;
+  if(d.go){if(chOf(d.go)&&d.go!==S.view)S.tab='rec';S.view=d.go;flashQ=null;save();render();window.scrollTo(0,0);return}
+  if(d.tab){S.tab=d.tab;flashQ=null;save();render();return}
+  if(d.plan){S.plan[d.plan]=b.checked;save();render();return}
+  if(d.step){reveal[d.step]=(reveal[d.step]||0)+1;rerenderEx(d.step);return}
+  if(d.all){const e=findEx(d.all);reveal[d.all]=(reveal[d.all]||0)>=e.s.length?e.s.length+1:e.s.length+1;rerenderEx(d.all);return}
+  if(d.grade){S.ex[d.grade]=d.g;save();rail();rerenderEx(d.grade);return}
+  if(d.flshow){flashQ.shown=true;render();return}
+  if(d.fl!==undefined){const cur=flashQ.q.shift();const k=cur.c.id+'_'+cur.i;
+    if(d.fl==='1'){if(!(k in flashQ.first))S.fl[k]=1}else{flashQ.first[k]=0;S.fl[k]=0;flashQ.q.splice(Math.min(3,flashQ.q.length),0,cur)}
+    if(!(k in flashQ.first))flashQ.first[k]=+d.fl;flashQ.shown=false;save();render();return}
+  if(d.flreset){flashQ=null;render();return}
+  if(d.bopen!==undefined){reveal['b'+d.bopen]=!reveal['b'+d.bopen];render();return}
+  if(d.bg!==undefined){S.blanc[d.bg]=d.g;save();render();return}
+  if(b.id==='tstart'){S.t0=Date.now();save();render();return}
+  if(b.id==='tstop'){S.t0=null;save();render();return}
+});
+document.addEventListener('keydown',ev=>{if(ev.code==='Space'&&flashQ&&document.querySelector('[data-flshow]')&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){ev.preventDefault();flashQ.shown=true;render()}});
+function findEx(id){for(const c of CH){const e=c.ex.find(x=>x.id===id);if(e)return e}}
+function rerenderEx(id){
+  const el=document.getElementById('ex_'+id);if(!el){render();return}
+  const c=CH.find(cc=>cc.ex.some(x=>x.id===id));const tmp=document.createElement('div');tmp.innerHTML=mathSafe(exCard(findEx(id),c));
+  const nw=tmp.firstElementChild;el.replaceWith(nw);fillFigs(nw);typeset(nw);
+}
+
+if(!['home','blanc','form','revoir','flashall'].includes(S.view)&&!chOf(S.view))S.view='home';
+render();
+if(window.MathJax&&MathJax.startup&&MathJax.startup.promise)MathJax.startup.promise.then(()=>typeset($('#app')));
+</script>
+
+</body>
+</html>

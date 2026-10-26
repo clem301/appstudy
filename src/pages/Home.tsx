@@ -4,7 +4,8 @@ import { Button } from '../components/ui/Button'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { getStats, getFlashcardsDueForReview, getAllProjects, syncWithBackend, resetLocalDatabase } from '../services/storage'
-import { UserSwitcher } from '../components/UserSwitcher'
+import { signOut } from '../services/supabase'
+import { recoverOldData } from '../services/userService'
 import type { Flashcard } from '../types/flashcard'
 import type { Project, ProjectTask } from '../types/project'
 
@@ -15,11 +16,21 @@ export function Home() {
   const [todayTasks, setTodayTasks] = useState<{ project: Project, task: ProjectTask }[]>([])
   const [syncing, setSyncing] = useState(false)
   const [lastSyncClick, setLastSyncClick] = useState(0)
+  
+  // Paramètres
+  const [showSettings, setShowSettings] = useState(false)
+  const [examMode, setExamMode] = useState(() => localStorage.getItem('appstudy_exam_mode') === 'true')
 
   useEffect(() => {
     loadStats().catch(err => console.error('Erreur chargement stats:', err))
     loadTodayItems().catch(err => console.error('Erreur chargement items:', err))
   }, [])
+
+  const toggleExamMode = () => {
+    const newValue = !examMode
+    setExamMode(newValue)
+    localStorage.setItem('appstudy_exam_mode', String(newValue))
+  }
 
   const loadStats = async () => {
     try {
@@ -117,6 +128,31 @@ export function Home() {
     }
   }
 
+  const handleLogout = async () => {
+    if (confirm('Voulez-vous vraiment vous déconnecter ?')) {
+      await signOut()
+      // Nettoyer les données locales pour éviter qu'un autre utilisateur les voie
+      await resetLocalDatabase()
+      window.location.href = '/auth'
+    }
+  }
+
+  const handleRecover = async () => {
+    if (confirm('Voulez-vous récupérer les données des anciens comptes locaux vers ce compte ?\n\nÀ faire uniquement sur le PC principal.')) {
+      setSyncing(true)
+      try {
+        const count = await recoverOldData()
+        alert(`${count} éléments récupérés ! La synchronisation va les envoyer sur le serveur.`)
+        await handleSync()
+      } catch (err) {
+        console.error('Erreur recup:', err)
+        alert('Erreur lors de la récupération.')
+      } finally {
+        setSyncing(false)
+      }
+    }
+  }
+
   // Calculate days until next Wednesday
   const getNextWednesday = () => {
     const now = new Date()
@@ -129,14 +165,10 @@ export function Home() {
   }
 
   const nextWednesday = getNextWednesday()
-  const now = new Date()
-  const timeUntil = nextWednesday.getTime() - now.getTime()
-  const daysUntil = Math.floor(timeUntil / (1000 * 60 * 60 * 24))
-  const hoursUntil = Math.floor((timeUntil % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
 
   return (
     <div className="fixed inset-0 overflow-y-scroll p-5 pb-28 safe-area-top" style={{ WebkitOverflowScrolling: 'touch' }}>
-      {/* Sync Button & User Switcher */}
+      {/* Sync Button & Logout */}
       <div className="fixed top-5 right-5 z-50 safe-area-top flex items-center gap-2">
         <button
           onClick={handleSync}
@@ -158,7 +190,22 @@ export function Home() {
             />
           </svg>
         </button>
-        <UserSwitcher />
+        
+        <button
+          onClick={() => setShowSettings(true)}
+          className="flex items-center gap-1 px-2 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+          title="Paramètres"
+        >
+          <span className="text-lg">⚙️</span>
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1 px-3 py-2 bg-red-500/20 text-red-200 hover:bg-red-500/40 rounded-lg transition-colors border border-red-500/30"
+          title="Se déconnecter"
+        >
+          <span className="text-sm font-medium">Déconnexion</span>
+        </button>
       </div>
 
       <div className="max-w-lg mx-auto space-y-5">
@@ -282,8 +329,54 @@ export function Home() {
             <p className="text-xs text-gray-500 mt-2">
               Double-clic = Reset complet (supprime toutes les données locales)
             </p>
+            
+            <div className="mt-4 pt-4 border-t border-gray-700/50">
+              <button
+                onClick={handleRecover}
+                className="text-xs text-gray-500 hover:text-gray-300 underline"
+              >
+                📥 Récupérer mes anciennes données locales
+              </button>
+            </div>
           </div>
         </Card>
+
+        {/* Modal Paramètres */}
+        {showSettings && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setShowSettings(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-slate-800 p-6 rounded-2xl max-w-sm w-full border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">Paramètres</h3>
+                <button onClick={() => setShowSettings(false)} className="text-gray-400 hover:text-white">✕</button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">🎓</span>
+                      <span className="font-bold text-white">Mode Examen</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Révisions 3x plus fréquentes (Cramming)</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" checked={examMode} onChange={toggleExamMode} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500"></div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-xs text-gray-500">v1.3.0 • AppStudy Pro</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
       </div>
     </div>
